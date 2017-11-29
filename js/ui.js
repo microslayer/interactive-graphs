@@ -145,36 +145,52 @@ function createUndirectedEdge(nodeID1, nodeID2) {
         height: node2.height()
     }
 
-    var center1X = info1.position.left + info1.width / 2; // node 1, X
-    var center2X = info2.position.left + info2.width / 2; // node 2, X
-    var center1Y = info1.position.top + info1.height / 2; // node 1, Y
-    var center2Y = info2.position.top + info2.height / 2; // node 2, Y
+    var x1 = info1.position.left + info1.width / 2; // node 1, X
+    var x2 = info2.position.left + info2.width / 2; // node 2, X
+    var y1 = info1.position.top + info1.height / 2; // node 1, Y
+    var y2 = info2.position.top + info2.height / 2; // node 2, Y
 
-    // line starts at 0, 0
-    var x2 = center2X - center1X
-    var y2 = center2Y - center1Y
-
-//    console.log(info1, info2, x2, y2)
+    if (x2 > x1 && y2 > y1) {
+        startX = x1;
+        startY = y1;
+        minX = 0;
+        minY = 0;
+        maxX = x2 - x1;
+        maxY = y2 - y1;
+    } else if (x2 < x1 && y2 < y1) {
+        startX = x2;
+        startY = y2;
+        minX = 0;
+        minY = 0;
+        maxX = x1 - x2;
+        maxY = y1 - y2;
+    } else if (x2 < x1 && y2 > y1) {
+        startX = x2;
+        startY = y1;
+        minX = 0;
+        minY = y2 - y1;
+        maxX = x1 - x2;
+        maxY = 0;
+    } else if (x2 > x1 && y2 < y1) {
+        console.log("Problem")
+        startX = x1;
+        startY = y2;
+        minX = 0;
+        minY = y2 - y1;
+        maxX = x2 - x1;
+        maxY = 0;
+    }
 
     drawLine(nodeID1,
              nodeID2,
-             Math.abs(center1X - center2X),
-             Math.abs(center2Y - center1Y),
-             center1X,
-             center1Y,
-             x2, y2
+             Math.abs(x2 - x1),
+             Math.abs(y2 - y1),
+             minX, maxX, minY, maxY,
+             startX, startY
     );
 }
 
-function drawLine(node1ID, nodeID2, width, height, startX, startY, x2, y2) {
-    if (!node1ID || startY == undefined || startX == undefined || x2 == undefined || y2 == undefined) {
-        console.error(`Cannot draw line, invalid parameters: ${node1ID} ${x1} ${x2} ${y1} ${y2}`)
-        return
-    }
-
-//    console.log(`start at (${startX}, ${startY})`)
-//    console.log(`end at (${x2}, ${y2})`)
-
+function drawLine(node1ID, nodeID2, width, height, minX, maxX, minY, maxY, startX, startY) {
     var div = $("<div></div>")
         .attr('class', 'edge_' + node1ID + "_" + nodeID2)
         .css('position', 'absolute')
@@ -183,7 +199,7 @@ function drawLine(node1ID, nodeID2, width, height, startX, startY, x2, y2) {
 
     var svg = $.parseHTML(
         `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-                    <line id="edge-line-${node1ID}-${nodeID2}" x1="0" y1="0" x2="${x2}" y2="${y2}" stroke="#231123" stroke-width="5"></line>
+                    <line id="edge-line-${node1ID}-${nodeID2}" x1="${minX}" y1="${minY}" x2="${maxX}" y2="${maxY}" stroke="#231123" stroke-width="5"></line>
           </svg>`
       )
 
