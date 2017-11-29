@@ -14,7 +14,7 @@ class node {
          node.append($.parseHTML(newNodeSVG(this.id, this.id)))
 
          // append to graph container
-         $(graph.container).append(node)
+         $(node).hide().fadeIn('fast').appendTo(graph.container)
      }
   }
 }

@@ -72,10 +72,10 @@ function removeNode(evt) {
 
     var id = node.attr('id')
     // remove node from dom
-    node.remove()
+    node.fadeOut('fast')
     // on screen, remove connecting edges
-    $(`[class*='edge_${id}']`).remove()
-    $(`[class ^=edge][class $=${id}]`).remove()
+    $(`[class*='edge_${id}']`).fadeOut('fast')
+    $(`[class ^=edge][class $=${id}]`).fadeOut('fast')
 
     // remove node from graph
     graph.removeNodeByID(id)
@@ -87,7 +87,7 @@ function onEdgeClick(evt) {
     // don't add a node
     evt.stopPropagation()
     // remove edge on screen
-    $(evt.target).remove()
+    $(evt.target).fadeOut('fast')
 
     // id is in form edge-line-1-2
     var arr = $(evt.target).attr('id').split("-")
@@ -188,6 +188,6 @@ function drawLine(node1ID, nodeID2, width, height, startX, startY, x2, y2) {
       )
 
     div.append(svg)
-    $(graph.container).append(div);
+    $(div).hide().appendTo(graph.container).fadeIn('fast');
 };
 })
