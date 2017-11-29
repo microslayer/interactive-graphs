@@ -1,0 +1,9 @@
+<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+ <g>
+  <title>Layer 1</title>
+  <ellipse fill="#000" stroke-width="1.5" cx="30.035715" cy="30.035715" id="svg_1" rx="20" ry="20"/>
+  <ellipse fill="#000" stroke="#ffffff" stroke-width="1.5" cx="30.035715" cy="30.035715" id="svg_3" rx="15" ry="15"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="14" id="svg_2" y="35.035715" x="25.035715" stroke-opacity="null" stroke-width="0" stroke="#ffffff" fill="#ffffff">A</text>
+ </g>
+</svg>

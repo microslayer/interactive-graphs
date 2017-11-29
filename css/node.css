@@ -1,0 +1,19 @@
+.node.inline {
+    display:inline;
+    position:absolute;
+    user-select: none!important;
+}
+
+.node {
+    position:absolute;
+    z-index:100;
+    margin:0;
+    padding:0;
+    left:0;
+    top:0;
+    cursor: default;
+}
+
+svg text::selection {
+    background: none;
+}
