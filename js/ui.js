@@ -13,6 +13,13 @@ $(graph.container).mouseup(onMouseUp)
 $(graph.container).on('dblclick', '.node svg', removeNode)
 $(graph.container).on('dblclick', '[id^="edge-line-"]', onEdgeClick)
 
+$("button#reset").click(reset)
+
+function reset() {
+    graph.reset()
+    $(graph.container).fadeOut('fast', function() { $(graph.container).empty().show() })
+}
+
 function onMouseDown(evt) {
     // if mouse down on node, trying to create connection between two nodes
     var nodeDown = $(evt.target).parents(".node");
@@ -198,8 +205,9 @@ function drawLine(node1ID, nodeID2, width, height, minX, maxX, minY, maxY, start
         .css('left', startX);
 
     var svg = $.parseHTML(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-                    <line id="edge-line-${node1ID}-${nodeID2}" x1="${minX}" y1="${minY}" x2="${maxX}" y2="${maxY}" stroke="#231123" stroke-width="5"></line>
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" shape-rendering="geometricPrecision">
+                    <line id="edge-line-${node1ID}-${nodeID2}" x1="${minX}" y1="${minY}" x2="${maxX}" y2="${maxY}"
+                    stroke="#231123" stroke-width="7"></line>
           </svg>`
       )
 

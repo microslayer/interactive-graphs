@@ -33,6 +33,11 @@ class Graph {
         }
      }
 
+     this.reset = _ => {
+        this.nodes = []
+        this.utils.currentNodeID = 65
+     }
+
      this.removeEdge = (startID, endID) => {
         var node1i = this.nodes.filter(a => a.id == startID)[0]
         var node2i = this.nodes.filter(a => a.id == endID)[0]
