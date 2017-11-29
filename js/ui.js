@@ -14,6 +14,23 @@ $(graph.container).on('dblclick', '.node svg', removeNode)
 $(graph.container).on('dblclick', '[id^="edge-line-"]', onEdgeClick)
 
 $("button#reset").click(reset)
+$("button#showAvgDegree").click(showAvgDegree)
+$("button#printJson").click(printJson)
+
+function printJson() {
+    console.log(JSON.stringify(graph.nodes))
+}
+
+function showAvgDegree() {
+    $(".nodeinfo").remove()
+
+    $.each($(".node"), function(n, obj) {
+        var id = $(obj).attr('id')
+        var degree = graph.getNode(id).neighbors.length
+        $(obj).append('<p class="nodeinfo">Degree: ' + degree + '</p>')
+    });
+
+}
 
 function reset() {
     graph.reset()
@@ -44,8 +61,8 @@ function onMouseUp(evt) {
         var nodeUpID = nodeUp.attr('id')
 
         if (nodeDownID == nodeUpID) // user clicked a node
-//            moveNode(nodeUpID)
-            return;
+             //moveNode(nodeUpID)
+             return;
         else // user dragged a node - create edge
             createUndirectedEdge(nodeDownID, nodeUpID)
     } else // user clicked empty space - add a node
@@ -79,10 +96,10 @@ function removeNode(evt) {
 
     var id = node.attr('id')
     // remove node from dom
-    node.fadeOut('fast')
+    node.fadeOut('fast', function(n) { node.remove() })
     // on screen, remove connecting edges
-    $(`[class*='edge_${id}']`).fadeOut('fast')
-    $(`[class ^=edge][class $=${id}]`).fadeOut('fast')
+    $(`[class*='edge_${id}']`).fadeOut('fast', function() { $(`[class*='edge_${id}']`).remove() })
+    $(`[class ^=edge][class $=${id}]`).fadeOut('fast', function(n) { $(`[class ^=edge][class $=${id}]`).remove() })
 
     // remove node from graph
     graph.removeNodeByID(id)
@@ -94,7 +111,7 @@ function onEdgeClick(evt) {
     // don't add a node
     evt.stopPropagation()
     // remove edge on screen
-    $(evt.target).fadeOut('fast')
+    $(evt.target).fadeOut('fast', function() { $(evt.target).remove() })
 
     // id is in form edge-line-1-2
     var arr = $(evt.target).attr('id').split("-")
@@ -207,7 +224,7 @@ function drawLine(node1ID, nodeID2, width, height, minX, maxX, minY, maxY, start
     var svg = $.parseHTML(
         `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" shape-rendering="geometricPrecision">
                     <line id="edge-line-${node1ID}-${nodeID2}" x1="${minX}" y1="${minY}" x2="${maxX}" y2="${maxY}"
-                    stroke="#231123" stroke-width="7"></line>
+                    stroke="#E8C547" stroke-width="2"></line>
           </svg>`
       )
 

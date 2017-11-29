@@ -9,6 +9,10 @@ class Graph {
 
      this.size = _ => this.nodes.length;
 
+     this.getNode = id => {
+        return this.nodes.filter(a => a.id == id)[0]
+     }
+
      this.addNode = _ => {
         var n = new node()
         this.nodes.push(n)

@@ -1,5 +1,4 @@
-<html>
-    <head>
+<html><head>
         <title>Interactive Graph Program</title>
 
         <!-- CSS files -->
@@ -18,14 +17,15 @@
     </head>
     <body>
         <h1>Interactive Graph</h1>
-        <button id="reset">Reset</button>
+
+        <button id="reset" title="Clears all nodes and edges from the graph">Reset</button>
+        <button id="showAvgDegree" title="Shows degree of each node">Show Degree</button>
+        <button id="printJson" title="Prints the graph JSON in the console">Print JSON</button>
 
         <div id="graphContainer"></div>
-
         <script>
             // define graph
             var graph = new Graph("#graphContainer")
         </script>
 
-    </body>
-</html>
+</body></html>

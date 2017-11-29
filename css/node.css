@@ -1,6 +1,9 @@
 .node.inline {
     display:inline;
     position:absolute;
+         -webkit-user-select: none!important; /* Chrome, Opera, Safari */
+    -moz-user-select: none!important; /* Firefox 2+ */
+    -ms-user-select: none!important; /* IE 10+ */
     user-select: none!important;
 }
 
@@ -15,5 +18,10 @@
 }
 
 svg text::selection {
-    background: none;
+    background: none!important;
+}
+
+.nodeinfo {
+    font-size:10px;
+    margin-top:0px;
 }
