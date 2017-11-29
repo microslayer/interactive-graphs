@@ -81,7 +81,6 @@ function addNode(evt) {
 
     var m = graph.addNode()
     m.draw(data)
-    writeIfDebug(`adding a node: ${m.id}`)
 }
 
 // removes a node from the global graph object
@@ -103,15 +102,11 @@ function removeNode(evt) {
 
     // remove node from graph
     graph.removeNodeByID(id)
-
-    writeIfDebug(`Removed node ${id}`)
 }
 
 function onEdgeClick(evt) {
     // don't add a node
     evt.stopPropagation()
-    // remove edge on screen
-    $(evt.target).fadeOut('fast', function() { $(evt.target).remove() })
 
     // id is in form edge-line-1-2
     var arr = $(evt.target).attr('id').split("-")
@@ -123,7 +118,13 @@ function onEdgeClick(evt) {
 
     var startNodeID = arr[2]
     var endNodeID = arr[3]
-    graph.removeEdge(startNodeID, endNodeID)
+
+    if (graph.removeEdge(startNodeID, endNodeID)) {
+        // remove edge on screen
+        $(evt.target).fadeOut('fast', function() { $(evt.target).remove() })
+    } else {
+        console.error(`Error removing edge ${startNodeID}-${endNodeID}`)
+    }
 }
 
 function moveNode(nodeID) {
@@ -152,66 +153,67 @@ function moveNode(nodeID) {
 }
 
 function createUndirectedEdge(nodeID1, nodeID2) {
-    graph.createUndirectedEdge(nodeID1, nodeID2)
+    if (graph.createUndirectedEdge(nodeID1, nodeID2)) {
+        node1 = $(`.node#${nodeID1}`)
+        node2 = $(`.node#${nodeID2}`)
 
-    node1 = $(`.node#${nodeID1}`)
-    node2 = $(`.node#${nodeID2}`)
+        info1 = {
+            position: node1.position(),
+            width: node1.width(),
+            height: node1.height()
+        }
 
-    info1 = {
-        position: node1.position(),
-        width: node1.width(),
-        height: node1.height()
+        info2 = {
+            position: node2.position(),
+            width: node2.width(),
+            height: node2.height()
+        }
+
+        var x1 = info1.position.left + info1.width / 2; // node 1, X
+        var x2 = info2.position.left + info2.width / 2; // node 2, X
+        var y1 = info1.position.top + info1.height / 2; // node 1, Y
+        var y2 = info2.position.top + info2.height / 2; // node 2, Y
+
+        if (x2 > x1 && y2 > y1) {
+            startX = x1;
+            startY = y1;
+            minX = 0;
+            minY = 0;
+            maxX = x2 - x1;
+            maxY = y2 - y1;
+        } else if (x2 < x1 && y2 < y1) {
+            startX = x2;
+            startY = y2;
+            minX = 0;
+            minY = 0;
+            maxX = x1 - x2;
+            maxY = y1 - y2;
+        } else if (x2 < x1 && y2 > y1) {
+            startX = x2;
+            startY = y1;
+            minX = 0;
+            minY = y2 - y1;
+            maxX = x1 - x2;
+            maxY = 0;
+        } else if (x2 > x1 && y2 < y1) {
+            startX = x1;
+            startY = y2;
+            minX = 0;
+            minY = y1 - y2;
+            maxX = x2 - x1;
+            maxY = 0;
+        }
+
+        drawLine(nodeID1,
+                 nodeID2,
+                 Math.abs(x2 - x1),
+                 Math.abs(y2 - y1),
+                 minX, maxX, minY, maxY,
+                 startX, startY
+        );
+    } else {
+        console.error(`Error creating undirected edge ${nodeID1}, ${nodeID2}`)
     }
-
-    info2 = {
-        position: node2.position(),
-        width: node2.width(),
-        height: node2.height()
-    }
-
-    var x1 = info1.position.left + info1.width / 2; // node 1, X
-    var x2 = info2.position.left + info2.width / 2; // node 2, X
-    var y1 = info1.position.top + info1.height / 2; // node 1, Y
-    var y2 = info2.position.top + info2.height / 2; // node 2, Y
-
-    if (x2 > x1 && y2 > y1) {
-        startX = x1;
-        startY = y1;
-        minX = 0;
-        minY = 0;
-        maxX = x2 - x1;
-        maxY = y2 - y1;
-    } else if (x2 < x1 && y2 < y1) {
-        startX = x2;
-        startY = y2;
-        minX = 0;
-        minY = 0;
-        maxX = x1 - x2;
-        maxY = y1 - y2;
-    } else if (x2 < x1 && y2 > y1) {
-        startX = x2;
-        startY = y1;
-        minX = 0;
-        minY = y2 - y1;
-        maxX = x1 - x2;
-        maxY = 0;
-    } else if (x2 > x1 && y2 < y1) {
-        console.log("Problem")
-        startX = x1;
-        startY = y2;
-        minX = 0;
-        minY = y2 - y1;
-        maxX = x2 - x1;
-        maxY = 0;
-    }
-
-    drawLine(nodeID1,
-             nodeID2,
-             Math.abs(x2 - x1),
-             Math.abs(y2 - y1),
-             minX, maxX, minY, maxY,
-             startX, startY
-    );
 }
 
 function drawLine(node1ID, nodeID2, width, height, minX, maxX, minY, maxY, startX, startY) {

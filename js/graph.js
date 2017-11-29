@@ -16,6 +16,7 @@ class Graph {
      this.addNode = _ => {
         var n = new node()
         this.nodes.push(n)
+        writeIfDebug(`Added node ${n.id}`)
         return n // return object to allow for object chaining
      }
 
@@ -35,6 +36,10 @@ class Graph {
             var neighborNode = this.nodes.filter(a => a.id == neighbors[i])[0]
             remove(neighborNode.neighbors, id)
         }
+
+        writeIfDebug(`Removed node ${id}`)
+
+        return true
      }
 
      this.reset = _ => {
@@ -50,6 +55,8 @@ class Graph {
         remove(node2i.neighbors, startID)
 
         writeIfDebug(`Removed edge between ${startID} and ${endID}`)
+
+        return true
      }
 
      this.createUndirectedEdge = (nodeID1, nodeID2) => {
@@ -71,6 +78,7 @@ class Graph {
 
         writeIfDebug("created edge between " + nodeID1 + " and " + nodeID2)
 
+        return true
      }
 
   }
