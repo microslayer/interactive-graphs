@@ -4,7 +4,7 @@ class node {
      this.neighbors = []
      this.draw = function(data) {
          // create node container object
-         var node = $('<div></div>')
+         var node = $('<div draggable="true"></div>')
             .addClass('node')
             .attr('id', this.id)
             .css('top', data.x)
