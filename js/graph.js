@@ -4,7 +4,17 @@ class Graph {
      this.container = container
      this.utils = {
         currentNodeID : 65, // A
-        getNextID : function() { return String.fromCharCode(this.currentNodeID++) }
+        getNextID : function() {
+            if (this.currentNodeID == 91) // if 'Z' go to 'a'
+                this.currentNodeID = 97;
+            else if (this.currentNodeID == 123) // if 'z' go to 'א'
+                this.currentNodeID = 1488;
+            else if (this.currentNodeID >= 1515) { // if ת start counting from numbers
+                this.currentNodeID++;
+                return (this.currentNodeID-1515);
+            }
+            return String.fromCharCode(this.currentNodeID++)
+        }
      }
 
      this.size = _ => this.nodes.length;

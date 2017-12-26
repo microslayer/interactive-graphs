@@ -29,6 +29,7 @@ function onNodeDrag(evt) {
 
 function onNodeDrop(evt) {
     evt.preventDefault();
+    evt.stopPropagation();
 
     var sourceID = evt.originalEvent.dataTransfer.getData("sourceID");
     var targetNode = getNodeFromChild(evt.target);
