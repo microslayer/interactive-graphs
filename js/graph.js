@@ -2,6 +2,9 @@ class Graph {
   constructor(container) {
      this.nodes = []
      this.container = container
+     this.settings = {
+        showDegree : false
+     }
      this.utils = {
         currentNodeID : 65, // A
         getNextID : function() {

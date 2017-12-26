@@ -49,14 +49,26 @@ function onNodeDrop(evt) {
 }
 
 function showAvgDegree() {
-    $(".nodeinfo").remove()
+    if (!graph.settings.showDegree) {
+        $(this).text("Hide Degree")
 
-    $.each($(".node"), function(n, obj) {
-        var id = $(obj).attr('id')
-        var degree = graph.getNode(id).neighbors.length
-        $(obj).append('<p class="nodeinfo">Degree: ' + degree + '</p>')
-    });
+        // remove all old degree values
+        // todo - remove once degree is dynamic
+        $(".nodeinfo").remove()
 
+        // show degree for each node
+        $.each($(".node"), function(n, obj) {
+            var id = $(obj).attr('id')
+            var degree = graph.getNode(id).neighbors.length
+            $(obj).append(`<p class="nodeinfo"><span class="degree">Degree: <num>${degree}</num></span></p>`)
+        })
+    } else {
+        // remove all node info classes
+        $(".nodeinfo").remove()
+        $(this).text("Show Degree")
+    }
+
+    graph.settings.showDegree = !graph.settings.showDegree
 }
 
 function reset() {
@@ -109,14 +121,22 @@ function removeNode(evt) {
     }
 
     var id = node.attr('id')
+    var neighbors = graph.getNode(id).neighbors.slice()
+
     // remove node from dom
     node.fadeOut('fast', function(n) { node.remove() })
+
     // on screen, remove connecting edges
     $(`[class*='edge_${id}']`).fadeOut('fast', function() { $(`[class*='edge_${id}']`).remove() })
     $(`[class ^=edge][class $=${id}]`).fadeOut('fast', function(n) { $(`[class ^=edge][class $=${id}]`).remove() })
 
     // remove node from graph
     graph.removeNodeByID(id)
+
+    // update degree
+    if (graph.settings.showDegree)
+        for (neighbor of neighbors)
+            updateDegree(neighbor)
 }
 
 function onEdgeClick(evt) {
@@ -167,9 +187,20 @@ function moveNode(nodeID) {
 
 }
 
+function updateDegree(nodeID) {
+    var node = graph.getNode(nodeID);
+    if (graph.settings.showDegree)
+        $(`.node#${nodeID} .nodeinfo .degree num`).text(node.degree())
+}
+
 function createUndirectedEdge(nodeID1, nodeID2) {
     if (graph.createUndirectedEdge(nodeID1, nodeID2)) {
         renderLine(nodeID1, nodeID2);
+
+        if (graph.settings.showDegree) {
+            updateDegree(nodeID1);
+            updateDegree(nodeID2);
+        }
     } else {
         console.error(`Error creating undirected edge ${nodeID1}, ${nodeID2}`)
     }
@@ -185,6 +216,11 @@ function removeEdgeVisual(nodeID1, nodeID2) {
     var edge2 = $(`.edge_${nodeID2}_${nodeID1}`);
     $(edge1).remove()
     $(edge2).remove()
+    if (graph.settings.showDegree) {
+        updateDegree(nodeID1);
+        updateDegree(nodeID2);
+    }
+
 }
 
 function renderLine(nodeID1, nodeID2) {
