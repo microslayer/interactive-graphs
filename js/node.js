@@ -3,6 +3,15 @@ class node {
      this.id = graph.utils.getNextID()
      this.neighbors = []
      this.degree = _ => this.neighbors.length
+     this.averageNeighbor = function() {
+        var sum = 0; 
+
+        if (this.neighbors.length == 0) return 0; 
+
+        this.neighbors.forEach(neighbor => { sum += graph.getNode(neighbor).degree()})
+            
+        return sum / this.degree()
+     }
      this.draw = function(data) {
          // create node container object
          var node = $('<div draggable="true"></div>')
@@ -14,8 +23,8 @@ class node {
          // append node SVG
          node.append($.parseHTML(newNodeSVG(this.id, this.id)))
 
-         if (graph.settings.showDegree)
-            node.append(newNodeInfo(this.degree()))
+         if (graph.settings.showStats)
+            node.append(graph.getStatsRepresentation(this, true))
 
          // append to graph container
          $(node).hide().fadeIn('fast').appendTo(graph.container)
@@ -31,8 +40,4 @@ function newNodeSVG(label, id) {
             y="25" x="20" stroke-opacity="null" stroke-width="0" stroke="#ffffff" fill="#ffffff">${label}</text>
          </g>
         </svg>`
-}
-
-function newNodeInfo(degree) {
-    return `<p class="nodeinfo"><span class='degree'>Degree: <num>${degree}</num></span></p>`
 }

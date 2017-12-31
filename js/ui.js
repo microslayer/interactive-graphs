@@ -37,7 +37,6 @@ function onNodeDrop(evt) {
     if (isNode(targetNode)) { // create edge
         var targetID = targetNode.attr('id')
         createUndirectedEdge(sourceID, targetID)
-        renderLine(sourceID, targetID);
     } else { // move node
         var sourceNode = getNodeElmFromID(sourceID);
         var height = sourceNode.height();
@@ -49,8 +48,8 @@ function onNodeDrop(evt) {
 }
 
 function showAvgDegree() {
-    if (!graph.settings.showDegree) {
-        $(this).text("Hide Degree")
+    if (!graph.settings.showStats) {
+        $(this).text("Hide Stats")
 
         // remove all old degree values
         // todo - remove once degree is dynamic
@@ -59,16 +58,17 @@ function showAvgDegree() {
         // show degree for each node
         $.each($(".node"), function(n, obj) {
             var id = $(obj).attr('id')
-            var degree = graph.getNode(id).neighbors.length
-            $(obj).append(`<p class="nodeinfo"><span class="degree">Degree: <num>${degree}</num></span></p>`)
+            var node = graph.getNode(id); 
+            var statStr = graph.getStatsRepresentation(node, true); 
+            $(obj).append(statStr)
         })
     } else {
         // remove all node info classes
         $(".nodeinfo").remove()
-        $(this).text("Show Degree")
+        $(this).text("Show Stats")
     }
 
-    graph.settings.showDegree = !graph.settings.showDegree
+    graph.settings.showStats = !graph.settings.showStats
 }
 
 function reset() {
@@ -134,9 +134,9 @@ function removeNode(evt) {
     graph.removeNodeByID(id)
 
     // update degree
-    if (graph.settings.showDegree)
+    if (graph.settings.showStats)
         for (neighbor of neighbors)
-            updateDegree(neighbor)
+            updateStats(neighbor)
 }
 
 function onEdgeClick(evt) {
@@ -162,47 +162,37 @@ function onEdgeClick(evt) {
     }
 }
 
-function moveNode(nodeID) {
-    console.log("moving node " + nodeID + "...")
-
-    var element = '.node#' + nodeID;
-
-    $(document).off('mousedown'); // remove regular click event listener
-    $(document).off('mouseup');
-
-    $(document).on('mousemove', function(e) {
-       // todo: wrap in closure
-       $(element).css({
-           left:  e.pageX,
-           top:   e.pageY
-        })
-    })
-
-    // when user clicks, remove event listener and restore old one
-    $(document).on('mousedown', function(e) {
-        $(document).off('mousemove')
-        $(document).on('mousedown', onMouseDown)
-        $(document).on('mousedup', onMouseUp)
-    })
-
-}
-
-function updateDegree(nodeID) {
+function updateStats(nodeID) {
     var node = graph.getNode(nodeID);
-    if (graph.settings.showDegree)
-        $(`.node#${nodeID} .nodeinfo .degree num`).text(node.degree())
+    if (graph.settings.showStats) {
+        var stats = graph.stats; 
+
+        Object.entries(stats).forEach(([key, fn]) => {
+            var value = fn(node).toFixed(2).replace(/[.,]00$/, "");
+           $(`.node#${nodeID} .nodeinfo .${key} num`).text(value); 
+        });
+    }           
 }
 
 function createUndirectedEdge(nodeID1, nodeID2) {
-    if (graph.createUndirectedEdge(nodeID1, nodeID2)) {
+    if (nodeID1 == nodeID2)
+        return;
+
+    try {
+        graph.createUndirectedEdge(nodeID1, nodeID2); 
         renderLine(nodeID1, nodeID2);
 
-        if (graph.settings.showDegree) {
-            updateDegree(nodeID1);
-            updateDegree(nodeID2);
+        if (graph.settings.showStats) {
+            nodes = [nodeID1, nodeID2]
+
+            nodes.forEach(n => {
+                updateStats(n); 
+                for (nb of graph.getNode(nodeID1).neighbors)
+                    updateStats(nb); 
+            })
         }
-    } else {
-        console.error(`Error creating undirected edge ${nodeID1}, ${nodeID2}`)
+    } catch (e) {
+        console.error(`Error creating undirected edge ${nodeID1}, ${nodeID2}: ${e}`)
     }
 }
 
@@ -216,9 +206,14 @@ function removeEdgeVisual(nodeID1, nodeID2) {
     var edge2 = $(`.edge_${nodeID2}_${nodeID1}`);
     $(edge1).remove()
     $(edge2).remove()
-    if (graph.settings.showDegree) {
-        updateDegree(nodeID1);
-        updateDegree(nodeID2);
+    if (graph.settings.showStats) {
+        nodes = [nodeID1, nodeID2]
+
+        nodes.forEach(n => {
+            updateStats(n); 
+            for (nb of graph.getNode(nodeID1).neighbors)
+                updateStats(nb); 
+        })
     }
 
 }
@@ -229,14 +224,14 @@ function renderLine(nodeID1, nodeID2) {
 
     info1 = {
         position: node1.position(),
-        width: node1.width(),
-        height: node1.height()
+        width: node1.width(), 
+        height: node1.find('svg').height()
     }
 
     info2 = {
         position: node2.position(),
-        width: node2.width(),
-        height: node2.height()
+        width: node2.width(), 
+        height: node2.find('svg').height()
     }
 
     var x1 = info1.position.left + info1.width / 2; // node 1, X
@@ -244,7 +239,9 @@ function renderLine(nodeID1, nodeID2) {
     var y1 = info1.position.top + info1.height / 2; // node 1, Y
     var y2 = info2.position.top + info2.height / 2; // node 2, Y
 
-    if (x2 > x1 && y2 > y1) {
+    if (x2 == x1 || y2 == y1) {
+        // fix 
+    } else if (x2 > x1 && y2 > y1) {
         startX = x1;
         startY = y1;
         minX = 0;
@@ -265,7 +262,7 @@ function renderLine(nodeID1, nodeID2) {
         minY = y2 - y1;
         maxX = x1 - x2;
         maxY = 0;
-    } else { // x2 > x1 && y2 < y1
+    } else { 
         startX = x1;
         startY = y2;
         minX = 0;
