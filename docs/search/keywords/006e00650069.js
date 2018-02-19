@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("nei",["Property"],[["neighbors",,[["node",,,,0,"File:node.js:node.neighbors","JavaScriptClass:node:neighbors"]]]]);
