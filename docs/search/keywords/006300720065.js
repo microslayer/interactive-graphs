@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("cre",["Function"],[["createUndirectedEdge",,[["graph",,,,0,"File:graph.js:graph.createUndirectedEdge","JavaScriptClass:graph:createUndirectedEdge"]]]]);

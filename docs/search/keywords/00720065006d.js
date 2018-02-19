@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("rem",["Function"],[["remove",,[[,,,,0,"File:utils.js:remove"]]],["removeEdge",,[["graph",,,,0,"File:graph.js:graph.removeEdge","JavaScriptClass:graph:removeEdge"]]],["removeNodeByID",,[["graph",,,,0,"File:graph.js:graph.removeNodeByID","JavaScriptClass:graph:removeNodeByID"]]]]);

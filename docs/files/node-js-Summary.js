@@ -1,0 +1,1 @@
+NDFramePage.OnPageTitleLoaded("File:node.js","node.js");NDSummary.OnSummaryLoaded("File:node.js",[["JavaScript","JavaScript"]],[["Classes","Class"],["Functions","Function"],["Groups","Group"]],[[1,0,0,"node","node"],[2,0,2,"Functions","node.Functions"],[3,0,1,"averageNeighbor","node.averageNeighbor"]]);

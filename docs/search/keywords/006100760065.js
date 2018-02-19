@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("ave",["Function"],[["averageNeighbor",,[["node",,,,0,"File:node.js:node.averageNeighbor","JavaScriptClass:node:averageNeighbor"]]]]);
