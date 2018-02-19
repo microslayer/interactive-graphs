@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("deg",["Property"],[["degree",,[["node",,,,0,"File:node.js:node.degree","JavaScriptClass:node:degree"]]]]);
