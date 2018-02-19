@@ -202,10 +202,15 @@ function redrawLine(nodeID1, nodeID2) {
 }
 
 function removeEdgeVisual(nodeID1, nodeID2) {
-    var edge1 = $(`.edge_${nodeID1}_${nodeID2}`);
-    var edge2 = $(`.edge_${nodeID2}_${nodeID1}`);
+    var classNameEdge1 = `edge_${nodeID1}_${nodeID2}`; 
+    var classNameEdge2 = `edge_${nodeID2}_${nodeID1}`; 
+
+    var edge1 = $("." + classNameEdge1).filter((index, elm) => $(elm).hasClass(classNameEdge1));  
+    var edge2 = $("." + classNameEdge2).filter((index, elm) => $(elm).hasClass(classNameEdge2)); 
+
     $(edge1).remove()
     $(edge2).remove()
+
     if (graph.settings.showStats) {
         nodes = [nodeID1, nodeID2]
 
