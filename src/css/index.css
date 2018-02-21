@@ -1,11 +1,50 @@
+/* COLORS */
+@light-pink: #FFAAAA;
+@dark-pink: #AA3939;
+
 body {
-    font-family: Sans-Serif;
+    margin:0px;
+    font-family: 'Open Sans', sans-serif;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, #f9f9f9 0%, #ffffff 50%);
-	background-repeat: no-repeat;
+    background-color:white;
+    /*background: linear-gradient(to bottom, #f9f9f9 14%, #ffffff 21%);*/
+    background-repeat: no-repeat;
 	user-select:none;
-    overflow-y:hidden;
+    overflow:hidden;
+}
+
+#panels {
+    display:flex;
+    x-justify-content: space-around;
+    x-align-items: stretch;
+}
+
+#headerPanel {
+    padding: 15px 10px;
+    width:100%;
+    border-bottom:1px solid #AA3939;
+
+    & h1 {
+        font-family: 'Roboto', sans-serif;
+        font-size: 28px;
+        text-align: left;
+        margin:0px;
+        padding-left:20px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+}
+
+#toolsPanel {
+    flex: 0 0 150px; 
+    border-right: 1px solid #AA3939;
+    display:block;
+    height:100%;
+}
+
+#graphPanel {
+    border: 2px solid black;
+    width:100%;
 }
 
 #graphContainer {
@@ -13,7 +52,29 @@ body {
     height: 100%;
 }
 
-button#reset {
+#toolsPanel > button {
+    width:100%;
+    height:30px;
+    display: block;
+    color: @dark-pink;
+    border:none;
+    border-bottom:1px solid @dark-pink;
+    cursor:pointer;
+    
+    &:hover {
+        background-color: #F6F1E9; 
+        -webkit-transition: background-color 200ms linear;
+        -ms-transition: background-color 200ms linear;
+        transition: background-color 200ms linear;
+        color:@dark-pink;
+    }
+}
+
+#toolsPanel > button a {
+    text-decoration: none;
+    color: @dark-pink;
+}
+/*button#reset {
     position:fixed;
     left:10px;
     top:10px
@@ -30,8 +91,4 @@ button#printJson {
     left:10px;
     top:50px
 }
-
-h1 {
-    color: #3A606E;
-    text-align:center;
-}
+*/
