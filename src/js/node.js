@@ -23,11 +23,13 @@ class node {
          // append node SVG
          node.append($.parseHTML(newNodeSVG(this.id, this.id)))
 
-         if (graph.settings.showStats)
-            node.append(graph.getStatsRepresentation(this, true))
+         if (graph.settings.showNodeStats)
+            node.append(graph.getNodeStatsRepresentation(this, true))
 
          // append to graph container
          $(node).hide().fadeIn('fast').appendTo(graph.container)
+            .css('top', data.x)
+            .css('left', data.y);
      }
   }
 }

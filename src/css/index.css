@@ -14,12 +14,6 @@ body {
     overflow:hidden;
 }
 
-#panels {
-    display:flex;
-    x-justify-content: space-around;
-    x-align-items: stretch;
-}
-
 #headerPanel {
     padding: 15px 10px;
     width:100%;
@@ -35,26 +29,50 @@ body {
     }
 }
 
-#toolsPanel {
-    flex: 0 0 150px; 
-    border-right: 1px solid #AA3939;
-    display:block;
-    height:100%;
-}
+#panels {
+    display:flex;
+    x-justify-content: space-around;
+    x-align-items: stretch;
 
-#graphPanel {
-    border: 2px solid black;
-    width:100%;
-}
+    & #toolsPanel {
+        flex: 0 0 150px; 
+        border-right: 1px solid #AA3939;
+        display:block;
+        height:100%;
+    }
 
-#graphContainer {
-    width: 100%;
-    height: 100%;
+    & #graphPanel {
+        border: 2px solid black;
+        width:100%;
+        height:100%;
+
+        & #graphContainer {
+            position:relative;
+            height: 100%;
+            width:100%;
+        }
+    }
+
+    & #graphStatsPanel {
+        flex: 0 0 150px;
+        border: 2px black solid;
+        & h3 {
+            margin: 8px;
+            color: @dark-pink;        
+        }
+        & p {
+            margin-right: 14px;
+            margin-left: 14px;
+            font-size: 12px;
+            line-height: 21px;
+        }
+    }
 }
 
 #toolsPanel > button {
     width:100%;
     height:30px;
+    outline: none; 
     display: block;
     color: @dark-pink;
     border:none;
@@ -70,26 +88,20 @@ body {
     }
 }
 
+.icon-small {
+    width: 10px !important;   
+}
+
+.icon-md {
+    width: 14px !important;   
+}
+
 #toolsPanel > button a {
     width: 100%;
     text-decoration: none;
     color: @dark-pink;
 }
-/*button#reset {
-    position:fixed;
-    left:10px;
-    top:10px
-}
 
-button#showAvgDegree {
-    position:fixed;
-    left:10px;
-    top:30px
+.center {
+    text-align: center; 
 }
-
-button#printJson {
-    position:fixed;
-    left:10px;
-    top:50px
-}
-*/

@@ -3,9 +3,10 @@ class Graph {
      this.nodes = []
      this.container = container
      this.settings = {
-        showStats : false
+        showNodeStats : false, 
+        showGraphStats : true
      }
-     this.stats = {
+     this.nodeStats = {
         'degree' : function(node) { 
              return node.degree()
         }, 
@@ -22,10 +23,15 @@ class Graph {
             return (neighbors_degree.reduce((a, b) => a + b, 0) / neighbors_degree.length) / degree; 
         }
      }, 
+     this.graphStats = {
+        'degree' : function(graph) { 
+             return graph.nodes.length; 
+        }
+     }, 
      // if `htmlRepresentation` is not specified, an object is returned
      // otherwise an HTML representation of the stats 
-     this.getStatsRepresentation = function(node, htmlRepresentation) {
-        var stats = this.stats;
+     this.getNodeStatsRepresentation = function(node, htmlRepresentation) {
+        var stats = this.nodeStats;
         var statStr = "";
 
         Object.entries(stats).forEach(([key, fn]) => {

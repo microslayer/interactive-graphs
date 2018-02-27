@@ -19,10 +19,17 @@
     <div id="panels">
         <div id="toolsPanel">
             <button id="reset" title="Clears all nodes and edges from the graph">Reset</button>
-            <button id="showAvgDegree" title="Shows statistics of each node">Show Stats</button>
+            <button id="showNodeStats" title="Shows statistics of each node">Show Node Stats</button>
+            <button id="showGraphStats" title="Shows statistics for the whole graph">Hide Graph Stats</button>
             <button id="printJson" title="Prints the graph JSON in the console">Print JSON</button>
-            <button id="documentation"><a href="/docs/index.html#File:graph.js" target="_blank">Documentation &#8599;
-</a></button>
+            <button id="documentation"><a href="/docs/index.html#File:graph.js" target="_blank">Documentation <i class="icon-small fas fa-external-link-alt"></i></a></button>
+        </div>
+
+        <div id="graphStatsPanel">
+            <h3 class="center">Graph Stats <i class="fas fa-plus-circle icon-md"></i></h3>
+            <div>
+                <p id="stats"></p>
+            </div>
         </div>
 
         <div id="graphPanel">
@@ -32,14 +39,17 @@
 
 </body>
 
-    <!-- jQuery -->
+    <!-- libraries -->
     <script src="src/js/lib/jquery.min.js"></script>
+    <script src="src/js/lib/fontawesome-all.js"></script>
     
     <!-- Javascript files -->
     <script src="src/js/graph.js"></script>
     <script src="src/js/utils.js"></script>
     <script src="src/js/node.js"></script>
     <script src="src/js/ui.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
 
     <!-- LESS preprocessor -->
     <script src="src/build/less.js" ></script>

@@ -1,19 +1,17 @@
 .node.inline {
     display:inline;
     position:absolute;
-         -webkit-user-select: none!important; /* Chrome, Opera, Safari */
+     -webkit-user-select: none!important; /* Chrome, Opera, Safari */
     -moz-user-select: none!important; /* Firefox 2+ */
     -ms-user-select: none!important; /* IE 10+ */
     user-select: none!important;
 }
 
 .node {
-    position:absolute;
+    position: absolute;
     z-index:100;
     margin:0;
     padding:0;
-    left:0;
-    top:0;
     cursor: default;
 }
 
@@ -21,7 +19,15 @@ svg text::selection {
     background: none!important;
 }
 
+.node svg {
+    filter: drop-shadow( -3px -2px 1px #808080);
+}
+
 .nodeinfo {
     font-size:10px;
     margin-top:0px;
+}
+
+.node.dragOver {
+    background-color: orange; 
 }

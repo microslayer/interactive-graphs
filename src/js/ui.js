@@ -10,14 +10,49 @@ $(graph.container).mousedown(onMouseDown)
 $(graph.container).mouseup(onMouseUp)
 $(graph.container).on('dblclick', '.node svg', removeNode)
 $(graph.container).on('dblclick', '[id^="edge-line-"]', onEdgeClick)
+
+// node dragging event listeners 
 $(graph.container).on('dragstart', '.node', onNodeDrag)
 $(graph.container).on('drop', '.node', onNodeDrop)
 $(graph.container).on('dragover', '.node', evt => event.preventDefault() )
+// $(graph.container).on('dragenter', '.node', onNodeDragEnter)
+// $(graph.container).on('dragleave', '.node', onNodeDragLeave)
 $(graph.container).on('drop', onNodeDrop);
 
+// button event listeners 
 $("button#reset").click(reset)
-$("button#showAvgDegree").click(showAvgDegree)
+$("button#showNodeStats").click(showNodeStats)
+$("button#showGraphStats").click(showGraphStats)
 $("button#printJson").click(printJson)
+
+$(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", updateGraphStats);  
+
+/* all events: 
+- nodeAdd
+- nodeRemove
+- edgeAdd
+- edgeRemove 
+*/ 
+
+// function onNodeDragEnter(evt) {
+//     event.stopPropagation();
+
+//     var node = getNodeFromChild(evt.target);
+//     if (node) 
+//         node.addClass('dragOver');
+
+//         console.log("on drag enter");   
+// }
+
+// function onNodeDragLeave(evt) {
+//     event.stopPropagation();
+
+//     var node = getNodeFromChild(evt.target);
+//     if (node) 
+//         node.removeClass('dragOver');  
+
+//     console.log("on drag leave!")
+// }
 
 function printJson() {
     console.log(JSON.stringify(graph.nodes))
@@ -40,16 +75,20 @@ function onNodeDrop(evt) {
     } else { // move node
         var sourceNode = getNodeElmFromID(sourceID);
         var height = sourceNode.height();
-        sourceNode.css({"left" : evt.pageX - (height / 2), "top" : evt.pageY - (height / 2)})
+        var offset = $(graph.container).offset(); 
+        sourceNode.css({
+            "left" : evt.pageX - offset.left - (height / 2), 
+            "top" : evt.pageY - offset.top - (height / 2)
+        }); 
         for (neighbor of graph.getNode(sourceID).neighbors) {
             redrawLine(sourceID, neighbor)
         }
     }
 }
 
-function showAvgDegree() {
-    if (!graph.settings.showStats) {
-        $(this).text("Hide Stats")
+function showNodeStats() {
+    if (!graph.settings.showNodeStats) {
+        $(this).text("Hide Node Stats")
 
         // remove all old degree values
         // todo - remove once degree is dynamic
@@ -59,21 +98,42 @@ function showAvgDegree() {
         $.each($(".node"), function(n, obj) {
             var id = $(obj).attr('id')
             var node = graph.getNode(id); 
-            var statStr = graph.getStatsRepresentation(node, true); 
+            var statStr = graph.getNodeStatsRepresentation(node, true); 
             $(obj).append(statStr)
         })
     } else {
         // remove all node info classes
         $(".nodeinfo").remove()
-        $(this).text("Show Stats")
+        $(this).text("Show Node Stats")
     }
 
-    graph.settings.showStats = !graph.settings.showStats
+    graph.settings.showNodeStats = !graph.settings.showNodeStats
+}
+
+function showGraphStats() {
+    var graphStatsPanel = $("#graphStatsPanel"); 
+    var graphDrawingPanel = $("#graphContainer"); 
+    var displacement = 150; 
+
+    if (!graph.settings.showGraphStats) {
+        //var statsStr = graph.getGraphStatsRepresentation(true); 
+        graphStatsPanel.show(); 
+
+        $(this).text("Hide Graph Stats")
+    } else {
+        graphStatsPanel.hide(); 
+        $(this).text("Show Graph Stats")
+    }
+
+    graph.settings.showGraphStats = !graph.settings.showGraphStats
 }
 
 function reset() {
     graph.reset()
     $(graph.container).fadeOut('fast', function() { $(graph.container).empty().show() })
+
+    var event = new CustomEvent('graphChange', { bubbles: true });
+    document.dispatchEvent(event);
 }
 
 function onMouseDown(evt) {
@@ -95,19 +155,26 @@ function onMouseUp(evt) {
     else if (nodeClicked) // don't want to create a node on top of node
         return;
     else
-        addNode(evt);
+        n = addNode(evt);
 }
 
 // adds a node to the global graph object
 // and draws it to the screen
 function addNode(evt) {
+    var graphDrawingPanel = $(graph.container); 
+    var offset = graphDrawingPanel.offset(); 
+
     var data = {
-        x : evt.clientY - 10,
-        y : evt.clientX - 20
+        x : evt.pageY - 10 - offset.top,
+        y : evt.pageX - 20 - offset.left
     }
 
     var m = graph.addNode()
     m.draw(data)
+
+    // trigger event 
+    var event = new CustomEvent('nodeAdd', { bubbles: true, id : m.id });
+    document.dispatchEvent(event);
 }
 
 // removes a node from the global graph object
@@ -134,9 +201,13 @@ function removeNode(evt) {
     graph.removeNodeByID(id)
 
     // update degree
-    if (graph.settings.showStats)
+    if (graph.settings.showNodeStats)
         for (neighbor of neighbors)
-            updateStats(neighbor)
+            updateNodeStats(neighbor)
+
+    // trigger event 
+    var event = new CustomEvent('nodeRemove', { bubbles: true, id : id });
+    document.dispatchEvent(event);
 }
 
 function onEdgeClick(evt) {
@@ -156,22 +227,50 @@ function onEdgeClick(evt) {
 
     if (graph.removeEdge(startNodeID, endNodeID)) {
         // remove edge on screen
-        removeEdgeVisual(startNodeID, endNodeID)
+        removeEdgeVisual(startNodeID, endNodeID); 
+
+        // trigger event 
+        var event = new CustomEvent('edgeRemove', { 
+            bubbles: true,
+            fromNode : startNodeID, 
+            toNode : endNodeID
+        });
+        document.dispatchEvent(event);
     } else {
         console.error(`Error removing edge ${startNodeID}-${endNodeID}`)
     }
 }
 
-function updateStats(nodeID) {
+function updateNodeStats(nodeID) {
     var node = graph.getNode(nodeID);
-    if (graph.settings.showStats) {
-        var stats = graph.stats; 
+    if (graph.settings.showNodeStats) {
+        var stats = graph.nodeStats; 
 
         Object.entries(stats).forEach(([key, fn]) => {
             var value = fn(node).toFixed(2).replace(/[.,]00$/, "");
            $(`.node#${nodeID} .nodeinfo .${key} num`).text(value); 
         });
     }           
+}
+
+function updateGraphStats() {
+    var statsStr = ""; 
+    var graphPanel = $("#graphStatsPanel #stats"); 
+
+    if (graph.settings.showGraphStats) {
+        var stats = graph.graphStats; 
+
+        Object.entries(stats).forEach(([key, fn]) => {
+            var value = fn(graph); 
+            
+            if (!isNaN(value)) // round numerical values to 2 decimals places 
+                value = value.toFixed(2).replace(/[.,]00$/, "");
+
+           statsStr += `${key}: ${value}\n`; 
+        });
+    }       
+
+    graphPanel.text(statsStr);   
 }
 
 function createUndirectedEdge(nodeID1, nodeID2) {
@@ -182,18 +281,22 @@ function createUndirectedEdge(nodeID1, nodeID2) {
         graph.createUndirectedEdge(nodeID1, nodeID2); 
         renderLine(nodeID1, nodeID2);
 
-        if (graph.settings.showStats) {
+        if (graph.settings.showNodeStats) {
             nodes = [nodeID1, nodeID2]
 
             nodes.forEach(n => {
-                updateStats(n); 
+                updateNodeStats(n); 
                 for (nb of graph.getNode(nodeID1).neighbors)
-                    updateStats(nb); 
+                    updateNodeStats(nb); 
             })
         }
     } catch (e) {
         console.error(`Error creating undirected edge ${nodeID1}, ${nodeID2}: ${e}`)
     }
+
+    // trigger event 
+    var event = new CustomEvent('edgeAdd', { bubbles: true, fromNode : nodeID1, toNode : nodeID2 });
+    document.dispatchEvent(event);
 }
 
 function redrawLine(nodeID1, nodeID2) {
@@ -211,13 +314,13 @@ function removeEdgeVisual(nodeID1, nodeID2) {
     $(edge1).remove()
     $(edge2).remove()
 
-    if (graph.settings.showStats) {
+    if (graph.settings.showNodeStats) {
         nodes = [nodeID1, nodeID2]
 
         nodes.forEach(n => {
-            updateStats(n); 
+            updateNodeStats(n); 
             for (nb of graph.getNode(nodeID1).neighbors)
-                updateStats(nb); 
+                updateNodeStats(nb); 
         })
     }
 
