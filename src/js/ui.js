@@ -244,9 +244,22 @@ function renderLine(nodeID1, nodeID2) {
     var y1 = info1.position.top + info1.height / 2; // node 1, Y
     var y2 = info2.position.top + info2.height / 2; // node 2, Y
 
-    if (x2 == x1 || y2 == y1) {
-        // fix 
-    } else if (x2 > x1 && y2 > y1) {
+    if (x2 == x1) { // straight vertical line 
+        startX = x1; 
+        startY = Math.min(y1, y2);  
+        minX = 0; 
+        minY = 0; 
+        maxX = 0; 
+        maxY = Math.max(y1, y2);
+    } else if (y2 == y1) { // straight horizontal line 
+        console.log('horizontal line!'); 
+        startX = Math.min(x1, x2); 
+        startY = y1;  
+        minX = 0; 
+        minY = 0; 
+        maxX = Math.max(x1, x2); 
+        maxY = 0;
+    } else if (x2 > x1 && y2 > y1) { // Diagonal, top-left to bottom-right
         startX = x1;
         startY = y1;
         minX = 0;
@@ -286,6 +299,11 @@ function renderLine(nodeID1, nodeID2) {
 }
 
 function drawLine(node1ID, nodeID2, width, height, minX, maxX, minY, maxY, startX, startY) {
+    var strokeWidth = 2; 
+
+    if (width < 3) { /* straight vertical line */ strokeWidth = 5-width; width = 5; }
+    if (height < 3) { /* straight horizontal line */ strokeWidth = 5-height; height = 5; }
+
     var div = $("<div></div>")
         .attr('class', 'edge_' + node1ID + "_" + nodeID2)
         .css('position', 'absolute')
@@ -295,7 +313,7 @@ function drawLine(node1ID, nodeID2, width, height, minX, maxX, minY, maxY, start
     var svg = $.parseHTML(
         `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" shape-rendering="geometricPrecision">
                     <line id="edge-line-${node1ID}-${nodeID2}" x1="${minX}" y1="${minY}" x2="${maxX}" y2="${maxY}"
-                    stroke="#E8C547" stroke-width="2"></line>
+                    stroke="#E8C547" stroke-width="${strokeWidth}"></line>
           </svg>`
       )
 
