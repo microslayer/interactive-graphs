@@ -40,7 +40,7 @@ function onNodeDrop(evt) {
     } else { // move node
         var sourceNode = getNodeElmFromID(sourceID);
         var height = sourceNode.height();
-        sourceNode.css({"left" : evt.pageX - (height / 2), "top" : evt.pageY - height})
+        sourceNode.css({"left" : evt.pageX - (height / 2), "top" : evt.pageY - (height / 2)})
         for (neighbor of graph.getNode(sourceID).neighbors) {
             redrawLine(sourceID, neighbor)
         }
