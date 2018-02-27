@@ -252,7 +252,6 @@ function renderLine(nodeID1, nodeID2) {
         maxX = 0; 
         maxY = Math.max(y1, y2);
     } else if (y2 == y1) { // straight horizontal line 
-        console.log('horizontal line!'); 
         startX = Math.min(x1, x2); 
         startY = y1;  
         minX = 0; 
