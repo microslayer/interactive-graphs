@@ -300,8 +300,8 @@ function renderLine(nodeID1, nodeID2) {
 function drawLine(node1ID, nodeID2, width, height, minX, maxX, minY, maxY, startX, startY) {
     var strokeWidth = 2; 
 
-    if (width < 3) { /* straight vertical line */ strokeWidth = 5-width; width = 5; }
-    if (height < 3) { /* straight horizontal line */ strokeWidth = 5-height; height = 5; }
+    if (width < 3) { /* straight vertical line */ strokeWidth = 4-width; width = 5; }
+    if (height < 3) { /* straight horizontal line */ strokeWidth = 4-height; height = 5; }
 
     var div = $("<div></div>")
         .attr('class', 'edge_' + node1ID + "_" + nodeID2)

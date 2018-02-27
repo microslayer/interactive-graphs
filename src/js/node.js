@@ -33,11 +33,11 @@ class node {
 }
 
 function newNodeSVG(label, id) {
-  return `<svg width="40" id="n_${id}" height="40" xmlns="http://www.w3.org/2000/svg">
+  return `<svg width="30" id="n_${id}" height="30" xmlns="http://www.w3.org/2000/svg">
          <g>
-          <ellipse fill="#82204A" cx="20" cy="20" rx="15" ry="15"/>
+          <ellipse fill="#82204A" cx="15" cy="15" rx="15" ry="15"/>
           <text xml:space="preserve" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" id="svg_2"
-            y="25" x="20" stroke-opacity="null" stroke-width="0" stroke="#ffffff" fill="#ffffff">${label}</text>
+            y="20" x="15" stroke-opacity="null" stroke-width="0" stroke="#ffffff" fill="#ffffff">${label}</text>
          </g>
         </svg>`
 }
