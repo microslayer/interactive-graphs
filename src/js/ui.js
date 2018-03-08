@@ -25,6 +25,16 @@ $("button#showNodeStats").click(showNodeStats)
 $("button#showGraphStats").click(showGraphStats)
 $("button#printJson").click(printJson)
 
+// set up modal to show controls 
+var controls_modal = new g_modal('Controls', 
+    `<p>Click to add a node</p>
+    <p>Double click to remove a node</p>
+    <p>Click and drag a node to move it</p>
+    <p>Click and drag a node on top of a node to add an edge</p>
+    <p>Double click an edge to remove it</p>`)
+$('body').append(controls_modal.wrapper)
+$("button#showControls").click(_ => controls_modal.showModal()); 
+
 $(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", updateGraphStats);  
 
 /* all events: 
@@ -53,6 +63,12 @@ $(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", updateGraphS
 
 //     console.log("on drag leave!")
 // }
+
+function showControls() {
+    var m = new g_modal('Controls', "Control+Click to add a node<br>Control+drag to eat lunch")
+    $('body').append(m.wrapper)
+    m.showModal()
+}
 
 function printJson() {
     console.log(JSON.stringify(graph.nodes))
