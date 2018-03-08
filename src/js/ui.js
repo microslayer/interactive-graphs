@@ -458,6 +458,7 @@ function drawLine(node1ID, nodeID2, width, height, minX, maxX, minY, maxY, start
     var div = $("<div></div>")
         .attr('class', 'edge_' + node1ID + "_" + nodeID2)
         .css('position', 'absolute')
+        .css('z-index', '-5')
         .css('top', startY)
         .css('left', startX);
 
