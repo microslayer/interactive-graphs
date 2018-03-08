@@ -70,6 +70,27 @@
 .modal-body {
     padding: 2px 16px;
     margin: 0px 20px; 
+
+    & a {
+        color: @dark-pink;
+        text-decoration: none; 
+    }
+
+    & button {
+        background-color: @dark-pink;
+        border: none;
+        color: white;
+        padding: 8px 28px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 15px 0px;
+    }
+
+    & button#enter_newGraphStat {
+        right: 20px; 
+    }
 }
 
 .modal-footer {

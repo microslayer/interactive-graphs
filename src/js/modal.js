@@ -1,24 +1,26 @@
 // represents the modal UI 
 
 class g_modal {
-	constructor(title, text) {
+	constructor(id, title, text) {
+		this.id = id; 
 		this.title = title; 
 		this.text = text; 
-		this.wrapper = this.createModal(title, text)[0]; 
+		this.footer = ''; 
+		this.wrapper = this.createModal(id, title, text, this.footer)[0]; 
+		// $('body').append(this.wrapper)
 	}
 
 	showModal() {
 		this.wrapper.style.display = 'block'; 
 	}
 
-	hideModal(wrapper) {
-		if (wrapper)
-			wrapper.style.display = 'none'; 
-		else 
-			this.wrapper.style.display = 'none'; 
+	hideModal() {
+		$(this.wrapper).fadeOut('fast'); 
 	}
 
-	createModal(title, text, footer) {
+	createModal(id, title, text, footer) {
+		if (!id) 
+			id = ""; 
 		if (!title)
 			title = ""; 
 		if (!text)
@@ -27,7 +29,7 @@ class g_modal {
 			footer = ""; 
 
 		var elm = $(
-			`<div id="myModal" class="modal">
+			`<div id="${id}" class="modal">
 			<div class="modal-content">
 			<div class="modal-header">
 			<span class="close">&times;</span>
@@ -50,5 +52,10 @@ class g_modal {
 		return elm; 
 	}
 
+	appendToBody(html) {
+		var elm = $(this.wrapper); 
+		var body = elm.find(".modal-body"); 
+		body.append(html); 
+	}
 
 }

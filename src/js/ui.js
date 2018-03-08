@@ -26,7 +26,7 @@ $("button#showGraphStats").click(showGraphStats)
 $("button#printJson").click(printJson)
 
 // set up modal to show controls 
-var controls_modal = new g_modal('Controls', 
+var controls_modal = new g_modal(null, 'Controls', 
     `<p>Click to add a node</p>
     <p>Double click to remove a node</p>
     <p>Click and drag a node to move it</p>
@@ -35,6 +35,45 @@ var controls_modal = new g_modal('Controls',
 $('body').append(controls_modal.wrapper)
 $("button#showControls").click(_ => controls_modal.showModal()); 
 
+// set up graph stats code editor 
+var gStatAdd_modal = new g_modal('newGraphStat', 'New Graph Statistic', 
+    `See the <a href='/docs/index.html#File:graph.js' target="_blank">documentation</a> for the graph properties that can
+    be used directly in the code.`)
+
+gStatAdd_modal.appendToBody(`
+    <textarea id="editor" rows="15" style="height:5px;">function customStatName(graph){\n  return graph.nodes.length;\n}</textarea>
+    <button id="enter_newGraphStat">Add</button>
+    `); 
+
+$('body').append(gStatAdd_modal.wrapper)
+$("#addNewGraphStat").click(_ => gStatAdd_modal.showModal()); 
+
+// code mirror 
+var elm = $("#newGraphStat #editor")[0]; 
+var codeEditor = CodeMirror.fromTextArea(elm, {
+  mode:  "javascript", 
+  lineNumbers: true, 
+  autofocus: true, 
+  autoRefresh: true, 
+  // height: auto, 
+  gutters: ["CodeMirror-lint-markers"],
+  lint: true, 
+  viewportMargin: 5
+});
+
+$("#enter_newGraphStat").click(function() {
+    var fn = codeEditor.getValue(); 
+    var expression = fn.substring(fn.indexOf('{'), fn.length);
+    var func = new Function('{' + expression + '}')
+    var funcName = fn.match(/^function(.*)\(/)[1].trim()
+
+    graph.graphStats[funcName] = func;
+
+    // hide modal 
+    gStatAdd_modal.hideModal(); 
+})
+
+// on all events update statistics 
 $(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", updateGraphStats);  
 
 /* all events: 
@@ -63,12 +102,6 @@ $(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", updateGraphS
 
 //     console.log("on drag leave!")
 // }
-
-function showControls() {
-    var m = new g_modal('Controls', "Control+Click to add a node<br>Control+drag to eat lunch")
-    $('body').append(m.wrapper)
-    m.showModal()
-}
 
 function printJson() {
     console.log(JSON.stringify(graph.nodes))

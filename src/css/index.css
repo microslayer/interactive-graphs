@@ -88,6 +88,14 @@ body {
     }
 }
 
+#addNewGraphStat {
+    cursor: pointer; 
+
+    &:hover {
+        color: #000;
+    };
+}
+
 .icon-small {
     width: 10px !important;   
 }
@@ -100,6 +108,10 @@ body {
     width: 100%;
     text-decoration: none;
     color: @dark-pink;
+
+    &:hover {
+        color: #000;
+    };
 }
 
 .center {
