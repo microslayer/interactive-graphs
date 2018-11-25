@@ -21,9 +21,26 @@ $(graph.container).on('drop', onNodeDrop);
 
 // button event listeners 
 $("button#reset").click(reset)
-$("button#showNodeStats").click(showNodeStats)
-$("button#showGraphStats").click(showGraphStats)
+$("button#showNodeStats").click(toggleNodeStats)
+$("button#showGraphStats").click(toggleGraphStats)
 $("button#printJson").click(printJson)
+
+/* 
+    Set up the inital values for the graph statistics panel 
+*/ 
+initGraphStatsPanel()
+
+// JS CodeMirror settings - used for modal code editor for adding JS functions. 
+var jsCodemirrorSettings = {
+  mode:  "javascript", 
+  lineNumbers: true, 
+  autofocus: true, 
+  autoRefresh: true, 
+  // height: auto, 
+  gutters: ["CodeMirror-lint-markers"],
+  lint: true, 
+  viewportMargin: 5
+}
 
 // set up modal to show controls 
 var controls_modal = new g_modal(null, 'Controls', 
@@ -35,7 +52,9 @@ var controls_modal = new g_modal(null, 'Controls',
 $('body').append(controls_modal.wrapper)
 $("button#showControls").click(_ => controls_modal.showModal()); 
 
-// set up graph stats code editor 
+/*
+    set up graph stats code editor modal 
+*/ 
 var gStatAdd_modal = new g_modal('newGraphStat', 'New Graph Statistic', 
     `See the <a href='/docs/index.html#File:graph.js' target="_blank">documentation</a> for the graph properties that can
     be used directly in the code.`)
@@ -48,60 +67,34 @@ gStatAdd_modal.appendToBody(`
 $('body').append(gStatAdd_modal.wrapper)
 $("#addNewGraphStat").click(_ => gStatAdd_modal.showModal()); 
 
-// code mirror 
 var elm = $("#newGraphStat #editor")[0]; 
-var codeEditor = CodeMirror.fromTextArea(elm, {
-  mode:  "javascript", 
-  lineNumbers: true, 
-  autofocus: true, 
-  autoRefresh: true, 
-  // height: auto, 
-  gutters: ["CodeMirror-lint-markers"],
-  lint: true, 
-  viewportMargin: 5
-});
+var g_codeEditor = CodeMirror.fromTextArea(elm, jsCodemirrorSettings);
 
-$("#enter_newGraphStat").click(function() {
-    var fn = codeEditor.getValue(); 
-    var expression = fn.substring(fn.indexOf('{'), fn.length);
-    var func = new Function('{' + expression + '}')
-    var funcName = fn.match(/^function(.*)\(/)[1].trim()
+$("#enter_newGraphStat").click(addNewGraphStat); 
 
-    graph.graphStats[funcName] = func;
+/*
+    set up node stats code editor modal 
+*/ 
+var nStatAdd_modal = new g_modal('newNodeStat', 'New Node Statistic', 
+    `See the <a href='/docs/index.html#File:node.js' target="_blank">documentation</a> for the node properties that can
+    be used directly in the code.`)
 
-    // hide modal 
-    gStatAdd_modal.hideModal(); 
-})
+nStatAdd_modal.appendToBody(`
+    <textarea id="editor" rows="15" style="height:5px;">function customStatName(node){\n  return node.neighbors.length;\n}</textarea>
+    <button id="enter_newNodeStat">Add</button>
+    `); 
+
+$('body').append(nStatAdd_modal.wrapper)
+$("#addNewNodeStat").click(_ => nStatAdd_modal.showModal()); 
+
+var elm = $("#newNodeStat #editor")[0]; 
+var n_codeEditor = CodeMirror.fromTextArea(elm, jsCodemirrorSettings);
+
+$("#enter_newNodeStat").click(addNewNodeStat)
 
 // on all events update statistics 
-$(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", updateGraphStats);  
-
-/* all events: 
-- nodeAdd
-- nodeRemove
-- edgeAdd
-- edgeRemove 
-*/ 
-
-// function onNodeDragEnter(evt) {
-//     event.stopPropagation();
-
-//     var node = getNodeFromChild(evt.target);
-//     if (node) 
-//         node.addClass('dragOver');
-
-//         console.log("on drag enter");   
-// }
-
-// function onNodeDragLeave(evt) {
-//     event.stopPropagation();
-
-//     var node = getNodeFromChild(evt.target);
-//     if (node) 
-//         node.removeClass('dragOver');  
-
-//     console.log("on drag leave!")
-// }
+$(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", updateGraphStatsPanel);  
+$(document).on("nodeStatAdd nodeStatChange nodeStatRemove", updateNodeStatsPanel);  
 
 function printJson() {
     console.log(JSON.stringify(graph.nodes))
@@ -123,7 +116,7 @@ function onNodeDrop(evt) {
         createUndirectedEdge(sourceID, targetID)
     } else { // move node
         var sourceNode = getNodeElmFromID(sourceID);
-        var height = sourceNode.height();
+        var height = sourceNode.find("svg").height();
         var offset = $(graph.container).offset(); 
         sourceNode.css({
             "left" : evt.pageX - offset.left - (height / 2), 
@@ -135,7 +128,7 @@ function onNodeDrop(evt) {
     }
 }
 
-function showNodeStats() {
+function toggleNodeStats() {
     if (!graph.settings.showNodeStats) {
         $(this).text("Hide Node Stats")
 
@@ -143,43 +136,46 @@ function showNodeStats() {
         // todo - remove once degree is dynamic
         $(".nodeinfo").remove()
 
+        var stats = graph.nodeStats; 
+
         // show degree for each node
         $.each($(".node"), function(n, obj) {
             var id = $(obj).attr('id')
-            var node = graph.getNode(id); 
-            var statStr = graph.getNodeStatsRepresentation(node, true); 
+            var n = graph.getNode(id); 
+            var statStr = n.getStatValuesHtml(stats, true); 
             $(obj).append(statStr)
         })
+        graph.settings.showNodeStats = true; 
+        updateNodeStatsPanel(); 
     } else {
         // remove all node info classes
         $(".nodeinfo").remove()
         $(this).text("Show Node Stats")
+        graph.settings.showNodeStats = false; 
     }
-
-    graph.settings.showNodeStats = !graph.settings.showNodeStats
 }
 
-function showGraphStats() {
-    var graphStatsPanel = $("#graphStatsPanel"); 
+function toggleGraphStats() {
+    var statsPanel = $("#statsPanel"); 
     var graphDrawingPanel = $("#graphContainer"); 
     var displacement = 150; 
 
     if (!graph.settings.showGraphStats) {
-        //var statsStr = graph.getGraphStatsRepresentation(true); 
-        graphStatsPanel.show(); 
-
+        graph.settings.showGraphStats = true; 
+        updateGraphStatsPanel()
+        statsPanel.show(); 
         $(this).text("Hide Graph Stats")
     } else {
-        graphStatsPanel.hide(); 
+        graph.settings.showGraphStats = false; 
+        statsPanel.hide(); 
         $(this).text("Show Graph Stats")
     }
-
-    graph.settings.showGraphStats = !graph.settings.showGraphStats
 }
 
 function reset() {
     graph.reset()
     $(graph.container).fadeOut('fast', function() { $(graph.container).empty().show() })
+    initGraphStatsPanel()
 
     var event = new CustomEvent('graphChange', { bubbles: true });
     document.dispatchEvent(event);
@@ -290,36 +286,112 @@ function onEdgeClick(evt) {
     }
 }
 
-function updateNodeStats(nodeID) {
-    var node = graph.getNode(nodeID);
+/* 
+    This function updates the individual stat values of a given node.  
+    @node can be a nodeID or an actual node. 
+*/ 
+function updateNodeStats(n) {
     if (graph.settings.showNodeStats) {
-        var stats = graph.nodeStats; 
+        if (typeof n == "string") // check if node is a node object or a node ID 
+            n = graph.getNode(n); // if node is an ID, get the node 
 
-        Object.entries(stats).forEach(([key, fn]) => {
-            var value = fn(node).toFixed(2).replace(/[.,]00$/, "");
-           $(`.node#${nodeID} .nodeinfo .${key} num`).text(value); 
-        });
-    }           
+        var id = n.id; 
+        var stats = graph.nodeStats; 
+        var statStr = n.getStatValuesHtml(stats, true); 
+        $(`.node#${id} .nodeinfo`).html(statStr);
+    }
 }
 
-function updateGraphStats() {
+/* 
+    This function adds a new node stat and re-renders all node  
+    infos to include that stat. It takes the function from the  
+    value in n_codeEditor, which is the code editor on the 
+    new node stat modal. 
+*/ 
+function addNewNodeStat() {
+    var fn = n_codeEditor.getValue(); 
+    var expression = 'return ' + fn; 
+    var func = new Function(expression)
+    var funcName = fn.match(/^function(.*)\(/)[1].trim()
+
+    graph.nodeStats[funcName] = func();
+
+    // update all nodes
+    if (graph.settings.showNodeStats)
+        for (n of graph.nodes) {
+            updateNodeStats(n)
+    }
+
+    nStatAdd_modal.hideModal(); // hide modal 
+
+    var event = new CustomEvent('nodeStatAdd');
+    document.dispatchEvent(event);
+}
+
+/* 
+    This function updates the Node Stats Panel with the name of the node stat functions
+    when a node stat is added, deleted, or changed. 
+*/ 
+function updateNodeStatsPanel() {
     var statsStr = ""; 
-    var graphPanel = $("#graphStatsPanel #stats"); 
+    var graphStatsList = $("#statsPanel #nodeStatsPanel ul"); 
+
+    if (graph.settings.showNodeStats) {
+        var stats = graph.nodeStats; 
+        Object.entries(stats).forEach(([key, fn]) => {
+            statsStr += `<li>${key}</li>`; 
+        });
+    } 
+
+    graphStatsList.html(statsStr); 
+}
+
+/* 
+    This function initializes the Graph Stats Panel
+    when the page is first rendered. 
+*/ 
+function initGraphStatsPanel() {
+    var statStr = ""; 
+    var graphStatsList = $("#statsPanel #graphStatsPanel ul"); 
 
     if (graph.settings.showGraphStats) {
-        var stats = graph.graphStats; 
-
-        Object.entries(stats).forEach(([key, fn]) => {
-            var value = fn(graph); 
-            
-            if (!isNaN(value)) // round numerical values to 2 decimals places 
-                value = value.toFixed(2).replace(/[.,]00$/, "");
-
-           statsStr += `${key}: ${value}\n`; 
+        stats = graph.graphStats;  
+        Object.entries(stats).forEach(([key, value]) => {
+            statStr += `<li>${key}: \n</li>`; 
         });
-    }       
+    }
 
-    graphPanel.text(statsStr);   
+    graphStatsList.html(statStr);   
+}
+
+/* 
+    This function adds a new graph stat. 
+    It takes the node function from the value in g_codeEditor, which 
+    is the code editor on the new graph stat modal. 
+*/ 
+function addNewGraphStat() {
+    var fn = g_codeEditor.getValue(); 
+    var expression = fn.substring(fn.indexOf('{'), fn.length);
+    var func = new Function('{' + expression + '}')
+    var funcName = fn.match(/^function(.*)\(/)[1].trim()
+
+    graph.graphStats[funcName] = func;
+
+    gStatAdd_modal.hideModal();     // hide modal 
+}
+
+/* 
+    This function updates the value of the Graph Stats Panel
+    when a node or edge is added, deleted, or changed. 
+*/ 
+function updateGraphStatsPanel() {
+    var statsStr = ""; 
+    var graphStatsList = $("#statsPanel #graphStatsPanel ul"); 
+
+    if (graph.settings.showGraphStats) 
+        statStr = graph.getStatValuesHtml(); 
+
+    graphStatsList.html(statStr);   
 }
 
 function createUndirectedEdge(nodeID1, nodeID2) {
@@ -381,14 +453,14 @@ function renderLine(nodeID1, nodeID2) {
 
     info1 = {
         position: node1.position(),
-        width: node1.width(), 
-        height: node1.find('svg').height()
+        width:    node1.find('svg').width(), 
+        height:   node1.find('svg').height()
     }
 
     info2 = {
         position: node2.position(),
-        width: node2.width(), 
-        height: node2.find('svg').height()
+        width:    node2.find('svg').width(), 
+        height:   node2.find('svg').height()
     }
 
     var x1 = info1.position.left + info1.width / 2; // node 1, X
@@ -399,45 +471,37 @@ function renderLine(nodeID1, nodeID2) {
     if (x2 == x1) { // straight vertical line 
         startX = x1; 
         startY = Math.min(y1, y2);  
-        minX = 0; 
-        minY = 0; 
-        maxX = 0; 
+        minX = 0, minY = 0, maxX = 0; 
         maxY = Math.max(y1, y2);
     } else if (y2 == y1) { // straight horizontal line 
         startX = Math.min(x1, x2); 
         startY = y1;  
-        minX = 0; 
-        minY = 0; 
+        minX = 0, minY = 0, maxY = 0;  
         maxX = Math.max(x1, x2); 
-        maxY = 0;
     } else if (x2 > x1 && y2 > y1) { // Diagonal, top-left to bottom-right
         startX = x1;
         startY = y1;
-        minX = 0;
-        minY = 0;
+        minX = 0, minY = 0;
         maxX = x2 - x1;
         maxY = y2 - y1;
     } else if (x2 < x1 && y2 < y1) {
         startX = x2;
         startY = y2;
-        minX = 0;
-        minY = 0;
+        minX = 0, minY = 0;
         maxX = x1 - x2;
         maxY = y1 - y2;
     } else if (x2 < x1 && y2 > y1) {
         startX = x2;
         startY = y1;
-        minX = 0;
+        minX = 0, maxY = 0; 
         minY = y2 - y1;
         maxX = x1 - x2;
-        maxY = 0;
     } else { 
         startX = x1;
         startY = y2;
-        minX = 0;
+        minX = 0, maxY = 0;
         minY = y1 - y2;
         maxX = x2 - x1;
-        maxY = 0;
     }
 
     drawLine(nodeID1,

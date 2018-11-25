@@ -12,6 +12,32 @@ class node {
             
         return sum / this.degree()
      }
+     this.getStatValues = function(stats) {
+        var n = this; 
+        var statsObj = {}; 
+
+        Object.entries(stats).forEach(([key, fn]) => {
+            var value = fn(n); 
+            if (!isNaN(value))
+                value = value.toFixed(2).replace(/[.,]00$/, "");
+            statsObj[key] = value; 
+        });
+
+        return statsObj; 
+     }, 
+     this.getStatValuesHtml = function(stats, wrapper) {
+        var statObj = this.getStatValues(stats); 
+        var statStr = "";
+
+        Object.entries(statObj).forEach(([key, value]) => {
+            statStr += `<span class='${key}'>${key}: <num>${value}</num></span><br />`; 
+        });
+
+        if (wrapper) 
+            statStr = `<p class="nodeinfo">` + statStr + `</p>`;
+
+        return statStr; 
+     }, 
      this.draw = function(data) {
          // create node container object
          var node = $('<div draggable="true"></div>')
@@ -23,8 +49,10 @@ class node {
          // append node SVG
          node.append($.parseHTML(newNodeSVG(this.id, this.id)))
 
-         if (graph.settings.showNodeStats)
-            node.append(graph.getNodeStatsRepresentation(this, true))
+         if (graph.settings.showNodeStats) {
+            var statStr = this.getStatValuesHtml(graph.nodeStats, true); 
+            node.append(statStr); 
+         }
 
          // append to graph container
          $(node).hide().fadeIn('fast').appendTo(graph.container)

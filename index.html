@@ -3,9 +3,10 @@
         <link rel="shortcut icon" href="src/img/ico/icon.ico">
 
         <!-- CSS files -->
-        <link rel="stylesheet/less" type="text/css" href="src/css/index.css">
-        <link rel="stylesheet/less" type="text/css" href="src/css/node.css">
-        <link rel="stylesheet/less" type="text/css" href="src/css/modal.css">
+        <link rel="stylesheet" type="text/css" href="src/css/index.css">
+        <link rel="stylesheet" type="text/css" href="src/css/node.css">
+        <link rel="stylesheet" type="text/css" href="src/css/modal.css">
+        <link rel="stylesheet" type="text/css" href="src/css/stats_panel.css">
 
         <!-- Google Font - Open Sans, Roboto -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto" rel="stylesheet">
@@ -27,12 +28,24 @@
             <button id="reset" title="Clears all nodes and edges from the graph">Reset</button>
         </div>
 
-        <div id="graphStatsPanel">
-            <h3 class="center">Graph Stats 
-                <span id="addNewGraphStat"><i class="fas fa-plus-circle icon-md"></i></span>
-            </h3>
-            <div>
-                <p id="stats"></p>
+        <div id="statsPanel">
+            <div id="graphStatsPanel">
+                <h3 class="center">Graph Stats 
+                    <span id="addNewGraphStat"><i class="fas fa-plus-circle icon-md"></i></span>
+                </h3>
+                <div>
+                    <p id="stats"></p>
+                    <ul></ul> 
+                </div>
+            </div>
+            <div id="nodeStatsPanel">
+                <h3 class="center">Node Stats 
+                    <span id="addNewNodeStat"><i class="fas fa-plus-circle icon-md"></i></span>
+                </h3>
+                <div>
+                    <p id="stats"></p>
+                    <ul></ul> 
+                </div>
             </div>
         </div>
 
@@ -57,7 +70,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
 
     <!-- LESS preprocessor -->
-    <script src="src/build/less.js" ></script>
+    <!--script src="src/build/less.js" ></script-->
 
     <script>
         // define graph
@@ -73,15 +86,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/lint.css" />
 
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/jshint/2.9.5/jshint.min.js"></script>
-<script src="//rawgithub.com/zaach/jsonlint/79b553fb65c192add9066da64043458981b3972b/lib/jsonlint.js"></script>
-<script src="//csslint.net/js/csslint.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.9.5/jshint.min.js"></script>
+<script src="https://rawgithub.com/zaach/jsonlint/79b553fb65c192add9066da64043458981b3972b/lib/jsonlint.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/lint.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/javascript-lint.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/json-lint.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/css-lint.js"></script>
-
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111745002-1"></script>

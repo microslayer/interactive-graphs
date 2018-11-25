@@ -26,7 +26,7 @@ function getNodeFromChild(el) {
 // returns a node element given the node ID
 function getNodeElmFromID(id) {
     // ${id} is case insensitive so need filter 
-    return $(`.node#${id}`).filter((index, elm) => $(elm).attr('id') == id); 
+    return $(`.node#${id}`).filter((index, elm) => $(elm).attr('id') == id);  
 }
 
 // removes an element from an array by value

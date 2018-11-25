@@ -1,6 +1,6 @@
 /* COLORS */
-@light-pink: #FFAAAA;
-@dark-pink: #AA3939;
+/*@light-pink: #FFAAAA;*/
+/*@dark-pink: #AA3939;*/
 
 .modal {
     display: none; /* hidden by default */
@@ -59,25 +59,26 @@
 
 .modal-header {
     padding: 2px 8px;
-    background-color: @dark-pink;
+    background-color: #AA3939; /* @dark-pink */ 
     color: white;
+}
 
-    & h2 {
+    .modal-header h2 {
         margin: 10px 20px; 
     }
-}
 
 .modal-body {
     padding: 2px 16px;
     margin: 0px 20px; 
+}
 
-    & a {
-        color: @dark-pink;
+    .modal-body a {
+        color: #AA3939; /* @dark-pink */ 
         text-decoration: none; 
     }
 
-    & button {
-        background-color: @dark-pink;
+    .modal-body button {
+        background-color: #AA3939; /* @dark-pink */ 
         border: none;
         color: white;
         padding: 8px 28px;
@@ -88,13 +89,12 @@
         margin: 15px 0px;
     }
 
-    & button#enter_newGraphStat {
+    .modal-body button#enter_newGraphStat {
         right: 20px; 
     }
-}
 
 .modal-footer {
     padding: 2px 16px;
-    background-color: @dark-pink;
+    background-color: #AA3939; /* @dark-pink */ 
     color: white;
 }

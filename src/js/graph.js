@@ -21,44 +21,29 @@ class Graph {
             }); 
 
             return (neighbors_degree.reduce((a, b) => a + b, 0) / neighbors_degree.length) / degree; 
+        }, 
+        // for testing only! do not commit 
+        'neighborLen' : function(node) { 
+            return node.neighbors.length; 
         }
      }, 
      this.graphStats = {
         'degree' : function(graph) { 
              return graph.nodes.length; 
+        }, 
+        // do not commit!! just for testing 
+        'degreeDiv3' : function(graph) { 
+             return graph.nodes.length / 3; 
+        }, 
+        //do not commit!! just for testing 
+        'firstNeighbor' : function(graph) { 
+             return graph.nodes[0].id; 
         }
      }, 
-     // if `htmlRepresentation` is not specified, an object is returned
-     // otherwise an HTML representation of the stats 
-     this.getNodeStatsRepresentation = function(node, htmlRepresentation) {
-        var stats = this.nodeStats;
-        var statStr = "";
-
-        Object.entries(stats).forEach(([key, fn]) => {
-            var value = fn(node).toFixed(2).replace(/[.,]00$/, "");
-            if (htmlRepresentation)
-                statStr += `<span class='${key}'>${key}: <num>${value}</num></span><br />`; 
-            else 
-                stats[key] = value; 
-        });
-
-        if (htmlRepresentation)
-            var statStr = `<p class="nodeinfo">` + statStr + `</p>`;
-
-        return (htmlRepresentation ? statStr : stats); 
-     }, 
      this.utils = {
-        currentNodeID : 65, // A
+        currentNodeID : 1, 
         getNextID : function() {
-            if (this.currentNodeID == 91) // if 'Z' go to 'a'
-                this.currentNodeID = 97;
-            else if (this.currentNodeID == 123) // if 'z' go to 'א'
-                this.currentNodeID = 1488;
-            else if (this.currentNodeID >= 1515) { // if 'ת' start counting from numbers
-                this.currentNodeID++;
-                return (this.currentNodeID-1515);
-            }
-            return String.fromCharCode(this.currentNodeID++)
+            return this.currentNodeID++; 
         }, 
      }
 
@@ -133,6 +118,35 @@ class Graph {
         writeIfDebug("created edge between " + nodeID1 + " and " + nodeID2)
 
         return true
+     }
+
+     this.getStatValues = _ => {
+        var n = this; 
+        var stats = this.graphStats; 
+        var statsObj = {}; 
+
+        Object.entries(stats).forEach(([key, fn]) => {
+            var value = fn(n); 
+            if (!isNaN(value))
+                value = value.toFixed(2).replace(/[.,]00$/, "");
+            statsObj[key] = value; 
+        });
+
+        return statsObj; 
+     }
+
+     this.getStatValuesHtml = (wrapper) => {
+        var statObj = this.getStatValues(stats); 
+        var statStr = "";
+
+        Object.entries(statObj).forEach(([key, value]) => {
+            statStr += `<li>${key}: ${value}\n</li>`; 
+        });
+
+        if (wrapper) 
+            statStr = `<ul>${statStr}</ul>`;
+
+        return statStr; 
      }
 
   }
