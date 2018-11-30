@@ -40,22 +40,22 @@ class node {
      }, 
      this.draw = function(data) {
          // create node container object
-         var node = $('<div draggable="true"></div>')
+         var n = $('<div draggable="true"></div>')
             .addClass('node')
             .attr('id', this.id)
             .css('top', data.x)
             .css('left', data.y);
 
          // append node SVG
-         node.append($.parseHTML(newNodeSVG(this.id, this.id)))
+         n.append($.parseHTML(newNodeSVG(this.id, this.id)))
 
          if (graph.settings.showNodeStats) {
             var statStr = this.getStatValuesHtml(graph.nodeStats, true); 
-            node.append(statStr); 
+            n.append(statStr); 
          }
 
          // append to graph container
-         $(node).hide().fadeIn('fast').appendTo(graph.container)
+         $(n).hide().fadeIn('fast').appendTo(graph.container)
             .css('top', data.x)
             .css('left', data.y);
      }
