@@ -1,101 +1,72 @@
-// global variables:
-// graph = global graph, defined in
+/* Global variables:
+
+   - graph      : global graph, defined in ../index.html
+   - statsPanel : represents the stats panel, defined in stats_panel.js
+*/ 
 
 var debug = true
 
 $(function() {
 
-// event listeners
+/* 
+    Event Listeners
+*/
+
 $(graph.container).mousedown(onMouseDown)
 $(graph.container).mouseup(onMouseUp)
 $(graph.container).on('dblclick', '.node svg', removeNode)
 $(graph.container).on('dblclick', '[id^="edge-line-"]', onEdgeClick)
 
-// node dragging event listeners 
+/* 
+    Event Listeners - Node Dragging
+*/
+
 $(graph.container).on('dragstart', '.node', onNodeDrag)
 $(graph.container).on('drop', '.node', onNodeDrop)
 $(graph.container).on('dragover', '.node', evt => event.preventDefault() )
-// $(graph.container).on('dragenter', '.node', onNodeDragEnter)
-// $(graph.container).on('dragleave', '.node', onNodeDragLeave)
-$(graph.container).on('drop', onNodeDrop);
-
-// button event listeners 
-$("button#reset").click(reset)
-$("button#showNodeStats").click(toggleNodeStats)
-$("button#showGraphStats").click(toggleGraphStats)
-$("button#printJson").click(printJson)
+$(graph.container).on('drop', onNodeDrop)
 
 /* 
-    Set up the inital values for the graph statistics panel 
+    Stats Panel
+*/
+
+var statsPanel = new StatsPanel(graph)
+
+/* 
+    Set up the node and graph statistics panel 
+*/
+
+$(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", statsPanel.graphStatsPanel.update)
+$(document).on("nodeStatAdd nodeStatChange nodeStatRemove", e => statsPanel.nodeStatsPanel.updatePanel)
+$(document).on("nodeStatAdd nodeStatChange nodeStatRemove", e => statsPanel.nodeStatsPanel.update)
+
+/* 
+    Button Event Listeners 
 */ 
-initGraphStatsPanel()
 
-// JS CodeMirror settings - used for modal code editor for adding JS functions. 
-var jsCodemirrorSettings = {
-  mode:  "javascript", 
-  lineNumbers: true, 
-  autofocus: true, 
-  autoRefresh: true, 
-  // height: auto, 
-  gutters: ["CodeMirror-lint-markers"],
-  lint: true, 
-  viewportMargin: 5
-}
+$("button#reset").click(reset)
+$("button#showNodeStats").click(statsPanel.nodeStatsPanel.toggleDisplay)
+$("button#showStatsPanel").click(e => statsPanel.toggleDisplay()); 
+$("button#printJson").click(printJson)
 
-// set up modal to show controls 
-var controls_modal = new g_modal(null, 'Controls', 
+/*
+    Set up controls modal 
+*/ 
+
+var controls_modal = new g_modal(
+    null, // no id needed
+    'Controls', 
     `<p>Click to add a node</p>
     <p>Double click to remove a node</p>
     <p>Click and drag a node to move it</p>
     <p>Click and drag a node on top of a node to add an edge</p>
-    <p>Double click an edge to remove it</p>`)
+    <p>Double click an edge to remove it</p>`); 
 $('body').append(controls_modal.wrapper)
 $("button#showControls").click(_ => controls_modal.showModal()); 
 
-/*
-    set up graph stats code editor modal 
+/* 
+    Functions 
 */ 
-var gStatAdd_modal = new g_modal('newGraphStat', 'New Graph Statistic', 
-    `See the <a href='/docs/index.html#File:graph.js' target="_blank">documentation</a> for the graph properties that can
-    be used directly in the code.`)
-
-gStatAdd_modal.appendToBody(`
-    <textarea id="editor" rows="15" style="height:5px;">function customStatName(graph){\n  return graph.nodes.length;\n}</textarea>
-    <button id="enter_newGraphStat">Add</button>
-    `); 
-
-$('body').append(gStatAdd_modal.wrapper)
-$("#addNewGraphStat").click(_ => gStatAdd_modal.showModal()); 
-
-var elm = $("#newGraphStat #editor")[0]; 
-var g_codeEditor = CodeMirror.fromTextArea(elm, jsCodemirrorSettings);
-
-$("#enter_newGraphStat").click(addNewGraphStat); 
-
-/*
-    set up node stats code editor modal 
-*/ 
-var nStatAdd_modal = new g_modal('newNodeStat', 'New Node Statistic', 
-    `See the <a href='/docs/index.html#File:node.js' target="_blank">documentation</a> for the node properties that can
-    be used directly in the code.`)
-
-nStatAdd_modal.appendToBody(`
-    <textarea id="editor" rows="15" style="height:5px;">function customStatName(node){\n  return node.neighbors.length;\n}</textarea>
-    <button id="enter_newNodeStat">Add</button>
-    `); 
-
-$('body').append(nStatAdd_modal.wrapper)
-$("#addNewNodeStat").click(_ => nStatAdd_modal.showModal()); 
-
-var elm = $("#newNodeStat #editor")[0]; 
-var n_codeEditor = CodeMirror.fromTextArea(elm, jsCodemirrorSettings);
-
-$("#enter_newNodeStat").click(addNewNodeStat)
-
-// on all events update statistics 
-$(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", updateGraphStatsPanel);  
-$(document).on("nodeStatAdd nodeStatChange nodeStatRemove", updateNodeStatsPanel);  
-
 function printJson() {
     console.log(JSON.stringify(graph.nodes))
 }
@@ -128,54 +99,10 @@ function onNodeDrop(evt) {
     }
 }
 
-function toggleNodeStats() {
-    if (!graph.settings.showNodeStats) {
-        $(this).text("Hide Node Stats")
-
-        // remove all old degree values
-        // todo - remove once degree is dynamic
-        $(".nodeinfo").remove()
-
-        var stats = graph.nodeStats; 
-
-        // show degree for each node
-        $.each($(".node"), function(n, obj) {
-            var id = $(obj).attr('id')
-            var n = graph.getNode(id); 
-            var statStr = n.getStatValuesHtml(stats, true); 
-            $(obj).append(statStr)
-        })
-        graph.settings.showNodeStats = true; 
-        updateNodeStatsPanel(); 
-    } else {
-        // remove all node info classes
-        $(".nodeinfo").remove()
-        $(this).text("Show Node Stats")
-        graph.settings.showNodeStats = false; 
-    }
-}
-
-function toggleGraphStats() {
-    var statsPanel = $("#statsPanel"); 
-    var graphDrawingPanel = $("#graphContainer"); 
-    var displacement = 150; 
-
-    if (!graph.settings.showGraphStats) {
-        graph.settings.showGraphStats = true; 
-        updateGraphStatsPanel()
-        statsPanel.show(); 
-        $(this).text("Hide Graph Stats")
-    } else {
-        graph.settings.showGraphStats = false; 
-        statsPanel.hide(); 
-        $(this).text("Show Graph Stats")
-    }
-}
-
 function reset() {
     graph.reset()
     $(graph.container).fadeOut('fast', function() { $(graph.container).empty().show() })
-    initGraphStatsPanel()
+    statsPanel.graphStatsPanel.initStatsAndUpdateUI()
 
     var event = new CustomEvent('graphChange', { bubbles: true });
     document.dispatchEvent(event);
@@ -248,7 +175,7 @@ function removeNode(evt) {
     // update degree
     if (graph.settings.showNodeStats)
         for (neighbor of neighbors)
-            updateNodeStats(neighbor)
+            statsPanel.nodeStatsPanel.update(neighbor)
 
     // trigger event 
     var event = new CustomEvent('nodeRemove', { bubbles: true, id : id });
@@ -286,114 +213,6 @@ function onEdgeClick(evt) {
     }
 }
 
-/* 
-    This function updates the individual stat values of a given node.  
-    @node can be a nodeID or an actual node. 
-*/ 
-function updateNodeStats(n) {
-    if (graph.settings.showNodeStats) {
-        if (typeof n == "string") // check if node is a node object or a node ID 
-            n = graph.getNode(n); // if node is an ID, get the node 
-
-        var id = n.id; 
-        var stats = graph.nodeStats; 
-        var statStr = n.getStatValuesHtml(stats, true); 
-        $(`.node#${id} .nodeinfo`).html(statStr);
-    }
-}
-
-/* 
-    This function adds a new node stat and re-renders all node  
-    infos to include that stat. It takes the function from the  
-    value in n_codeEditor, which is the code editor on the 
-    new node stat modal. 
-*/ 
-function addNewNodeStat() {
-    var fn = n_codeEditor.getValue(); 
-    var expression = 'return ' + fn; 
-    var func = new Function(expression)
-    var funcName = fn.match(/^function(.*)\(/)[1].trim()
-
-    graph.nodeStats[funcName] = func();
-
-    // update all nodes
-    if (graph.settings.showNodeStats)
-        for (n of graph.nodes) {
-            updateNodeStats(n)
-    }
-
-    nStatAdd_modal.hideModal(); // hide modal 
-
-    var event = new CustomEvent('nodeStatAdd');
-    document.dispatchEvent(event);
-}
-
-/* 
-    This function updates the Node Stats Panel with the name of the node stat functions
-    when a node stat is added, deleted, or changed. 
-*/ 
-function updateNodeStatsPanel() {
-    var statsStr = ""; 
-    var graphStatsList = $("#statsPanel #nodeStatsPanel ul"); 
-
-    if (graph.settings.showNodeStats) {
-        var stats = graph.nodeStats; 
-        Object.entries(stats).forEach(([key, fn]) => {
-            statsStr += `<li>${key}</li>`; 
-        });
-    } 
-
-    graphStatsList.html(statsStr); 
-}
-
-/* 
-    This function initializes the Graph Stats Panel
-    when the page is first rendered. 
-*/ 
-function initGraphStatsPanel() {
-    var statStr = ""; 
-    var graphStatsList = $("#statsPanel #graphStatsPanel ul"); 
-
-    if (graph.settings.showGraphStats) {
-        stats = graph.graphStats;  
-        Object.entries(stats).forEach(([key, value]) => {
-            statStr += `<li>${key}: \n</li>`; 
-        });
-    }
-
-    graphStatsList.html(statStr);   
-}
-
-/* 
-    This function adds a new graph stat. 
-    It takes the node function from the value in g_codeEditor, which 
-    is the code editor on the new graph stat modal. 
-*/ 
-function addNewGraphStat() {
-    var fn = g_codeEditor.getValue(); 
-    var expression = fn.substring(fn.indexOf('{'), fn.length);
-    var func = new Function('{' + expression + '}')
-    var funcName = fn.match(/^function(.*)\(/)[1].trim()
-
-    graph.graphStats[funcName] = func;
-
-    gStatAdd_modal.hideModal();     // hide modal 
-}
-
-/* 
-    This function updates the value of the Graph Stats Panel
-    when a node or edge is added, deleted, or changed. 
-*/ 
-function updateGraphStatsPanel() {
-    var statsStr = ""; 
-    var graphStatsList = $("#statsPanel #graphStatsPanel ul"); 
-
-    if (graph.settings.showGraphStats) 
-        statStr = graph.getStatValuesHtml(); 
-
-    graphStatsList.html(statStr);   
-}
-
 function createUndirectedEdge(nodeID1, nodeID2) {
     if (nodeID1 == nodeID2)
         return;
@@ -406,9 +225,9 @@ function createUndirectedEdge(nodeID1, nodeID2) {
             nodes = [nodeID1, nodeID2]
 
             nodes.forEach(n => {
-                updateNodeStats(n); 
+                statsPanel.nodeStatsPanel.update(n); 
                 for (nb of graph.getNode(nodeID1).neighbors)
-                    updateNodeStats(nb); 
+                    statsPanel.nodeStatsPanel.update(nb); 
             })
         }
     } catch (e) {
@@ -439,9 +258,9 @@ function removeEdgeVisual(nodeID1, nodeID2) {
         nodes = [nodeID1, nodeID2]
 
         nodes.forEach(n => {
-            updateNodeStats(n); 
+            statsPanel.nodeStatsPanel.update(n); 
             for (nb of graph.getNode(nodeID1).neighbors)
-                updateNodeStats(nb); 
+                statsPanel.nodeStatsPanel.update(nb); 
         })
     }
 

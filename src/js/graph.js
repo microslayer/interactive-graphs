@@ -84,7 +84,7 @@ class Graph {
 
      this.reset = _ => {
         this.nodes = []
-        this.utils.currentNodeID = 65
+        this.utils.currentNodeID = 1
      }
 
      this.removeEdge = (startID, endID) => {

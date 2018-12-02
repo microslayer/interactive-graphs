@@ -1,4 +1,4 @@
-// represents the modal UI 
+// represents a modal UI 
 
 class g_modal {
 	constructor(id, title, text) {
