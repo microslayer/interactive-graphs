@@ -12,25 +12,25 @@ class Graph {
              return node.degree()
             }, 
             visible: true
-        }, 
-        'fiVector' : {
-            visible: true, 
-            fn: function(node) { 
-                var degree = node.degree()
-                if (degree == 0) return 0; 
-                var neighbors_degree = []
-                node.neighbors.forEach(neighbor => { 
-                    neighbors_degree.push(graph.getNode(neighbor).degree()) 
-                }); 
-                return (neighbors_degree.reduce((a, b) => a + b, 0) / neighbors_degree.length) / degree; 
-            }, 
-        }, 
-        'neighborLen' : {
-            visible: true, 
-            fn: function(node) { 
-                return node.neighbors.length;
-            }, 
         }
+        // 'fiVector' : {
+        //     visible: true, 
+        //     fn: function(node) { 
+        //         var degree = node.degree()
+        //         if (degree == 0) return 0; 
+        //         var neighbors_degree = []
+        //         node.neighbors.forEach(neighbor => { 
+        //             neighbors_degree.push(graph.getNode(neighbor).degree()) 
+        //         }); 
+        //         return (neighbors_degree.reduce((a, b) => a + b, 0) / neighbors_degree.length) / degree; 
+        //     }, 
+        // }, 
+        // 'neighborLen' : {
+        //     visible: true, 
+        //     fn: function(node) { 
+        //         return node.neighbors.length;
+        //     }, 
+        // }
      }, 
      this.graphStats = {
         'degree' : { 
@@ -38,19 +38,19 @@ class Graph {
             fn: function(graph) { 
              return graph.nodes.length; 
             }
-        }, 
-        'degreeDiv3' : { 
-            visible: true, 
-            fn: function(graph) { 
-             return graph.nodes.length / 3; 
-            }
-        }, 
-        'firstNeighbor' : { 
-            visible: true, 
-            fn: function(graph) { 
-             return graph.nodes[0].id; 
-            }
-        }
+        }//, 
+        // 'degreeDiv3' : { 
+        //     visible: true, 
+        //     fn: function(graph) { 
+        //      return graph.nodes.length / 3; 
+        //     }
+        // }, 
+        // 'firstNeighbor' : { 
+        //     visible: true, 
+        //     fn: function(graph) { 
+        //      return graph.nodes[0].id; 
+        //     }
+        // }
      }, 
      this.utils = {
         currentNodeID : 1, 
