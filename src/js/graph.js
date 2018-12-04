@@ -3,62 +3,59 @@ class Graph {
      this.nodes = []
      this.container = container
      this.settings = {
-        showNodeStats : false, 
+        showNodeStats : true, 
         showGraphStats : true
      }
      this.nodeStats = {
-        'degree' : function(node) { 
+        'degree' : {
+            fn: function(node) { 
              return node.degree()
+            }, 
+            visible: true
         }, 
-        'fiVector' : function(node) { 
-            var degree = node.degree()
-
-            if (degree == 0) return 0; 
-
-            var neighbors_degree = []
-            node.neighbors.forEach(neighbor => { 
-                neighbors_degree.push(graph.getNode(neighbor).degree()) 
-            }); 
-
-            return (neighbors_degree.reduce((a, b) => a + b, 0) / neighbors_degree.length) / degree; 
+        'fiVector' : {
+            visible: true, 
+            fn: function(node) { 
+                var degree = node.degree()
+                if (degree == 0) return 0; 
+                var neighbors_degree = []
+                node.neighbors.forEach(neighbor => { 
+                    neighbors_degree.push(graph.getNode(neighbor).degree()) 
+                }); 
+                return (neighbors_degree.reduce((a, b) => a + b, 0) / neighbors_degree.length) / degree; 
+            }, 
+        }, 
+        'neighborLen' : {
+            visible: true, 
+            fn: function(node) { 
+                return node.neighbors.length;
+            }, 
         }
      }, 
      this.graphStats = {
-        'degree' : function(graph) { 
+        'degree' : { 
+            visible: true, 
+            fn: function(graph) { 
              return graph.nodes.length; 
+            }
+        }, 
+        'degreeDiv3' : { 
+            visible: true, 
+            fn: function(graph) { 
+             return graph.nodes.length / 3; 
+            }
+        }, 
+        'firstNeighbor' : { 
+            visible: true, 
+            fn: function(graph) { 
+             return graph.nodes[0].id; 
+            }
         }
      }, 
-     // if `htmlRepresentation` is not specified, an object is returned
-     // otherwise an HTML representation of the stats 
-     this.getNodeStatsRepresentation = function(node, htmlRepresentation) {
-        var stats = this.nodeStats;
-        var statStr = "";
-
-        Object.entries(stats).forEach(([key, fn]) => {
-            var value = fn(node).toFixed(2).replace(/[.,]00$/, "");
-            if (htmlRepresentation)
-                statStr += `<span class='${key}'>${key}: <num>${value}</num></span><br />`; 
-            else 
-                stats[key] = value; 
-        });
-
-        if (htmlRepresentation)
-            var statStr = `<p class="nodeinfo">` + statStr + `</p>`;
-
-        return (htmlRepresentation ? statStr : stats); 
-     }, 
      this.utils = {
-        currentNodeID : 65, // A
+        currentNodeID : 1, 
         getNextID : function() {
-            if (this.currentNodeID == 91) // if 'Z' go to 'a'
-                this.currentNodeID = 97;
-            else if (this.currentNodeID == 123) // if 'z' go to 'א'
-                this.currentNodeID = 1488;
-            else if (this.currentNodeID >= 1515) { // if 'ת' start counting from numbers
-                this.currentNodeID++;
-                return (this.currentNodeID-1515);
-            }
-            return String.fromCharCode(this.currentNodeID++)
+            return this.currentNodeID++; 
         }, 
      }
 
@@ -99,7 +96,7 @@ class Graph {
 
      this.reset = _ => {
         this.nodes = []
-        this.utils.currentNodeID = 65
+        this.utils.currentNodeID = 1
      }
 
      this.removeEdge = (startID, endID) => {
@@ -133,6 +130,44 @@ class Graph {
         writeIfDebug("created edge between " + nodeID1 + " and " + nodeID2)
 
         return true
+     }
+
+     this.getStatValues = _ => {
+        var n = this; 
+        var stats = this.graphStats; 
+        var statsObj = {}; 
+
+        Object.entries(stats).forEach(([key, stat]) => {
+            var entry = { value: null, visible: stat.visible };   
+            if (!stat.visible) // don't compute stat if it's not visible 
+                entry.value = ""; 
+            else {
+                try {
+                    entry.value = stat.fn(n)
+                } catch (e) {
+                    entry.value = "Error: " + (e ? JSON.stringify(e) : "");  
+                }
+                if (!isNaN(entry.value))
+                    entry.value = entry.value.toFixed(2).replace(/[.,]00$/, "");
+            }
+            statsObj[key] = entry; 
+        });
+
+        return statsObj; 
+     }
+
+     this.getStatValuesHtml = (wrapper) => {
+        var statObj = this.getStatValues(stats); 
+        var statStr = "";
+
+        Object.entries(statObj).forEach(([key, val]) => {
+            statStr += getListItemHtml(key, val.value, {colon:true, visible: val.visible }); 
+        });
+
+        if (wrapper) 
+            statStr = `<ul>${statStr}</ul>`;
+
+        return statStr; 
      }
 
   }

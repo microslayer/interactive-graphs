@@ -1,108 +1,83 @@
-// global variables:
-// graph = global graph, defined in
+/* Global variables:
+
+   - graph      : global graph, defined in ../index.html
+   - statsPanel : represents the stats panel, defined in stats_panel.js
+*/ 
 
 var debug = true
 
 $(function() {
 
-// event listeners
+/* 
+    Event Listeners
+*/
+
 $(graph.container).mousedown(onMouseDown)
 $(graph.container).mouseup(onMouseUp)
 $(graph.container).on('dblclick', '.node svg', removeNode)
 $(graph.container).on('dblclick', '[id^="edge-line-"]', onEdgeClick)
 
-// node dragging event listeners 
+/* 
+    Event Listeners - Node Dragging
+*/
+
 $(graph.container).on('dragstart', '.node', onNodeDrag)
 $(graph.container).on('drop', '.node', onNodeDrop)
 $(graph.container).on('dragover', '.node', evt => event.preventDefault() )
-// $(graph.container).on('dragenter', '.node', onNodeDragEnter)
-// $(graph.container).on('dragleave', '.node', onNodeDragLeave)
-$(graph.container).on('drop', onNodeDrop);
+$(graph.container).on('drop', onNodeDrop)
 
-// button event listeners 
+/* 
+    Stats Panel
+*/
+
+var statsPanel = new StatsPanel(graph)
+
+/* 
+    Set up the node and graph statistics panel 
+*/
+
+$(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", statsPanel.graphStatsPanel.update)
+$(document).on("nodeStatAdd nodeStatChange nodeStatRemove", e => statsPanel.nodeStatsPanel.updatePanel)
+$(document).on("nodeStatAdd nodeStatChange nodeStatRemove", e => statsPanel.nodeStatsPanel.update)
+
+/* 
+    Graph & node stat panel button event listeners 
+*/ 
+
+$(document).on('click', "#graphStatsPanel .li-del",  function(e) { statsPanel.graphStatsPanel.deleteStat(e) })
+$(document).on('click', "#graphStatsPanel .li-edit", function(e) { statsPanel.graphStatsPanel.editStat(e) })
+$(document).on('click', "#graphStatsPanel .li-vis",  function(e) { statsPanel.graphStatsPanel.toggleStatVisibility(e) })
+$(document).on('click', "#nodeStatsPanel .li-del",   function(e) { statsPanel.nodeStatsPanel.deleteStat(e) })
+$(document).on('click', "#nodeStatsPanel .li-edit",  function(e) { statsPanel.nodeStatsPanel.editStat(e) })
+$(document).on('click', "#nodeStatsPanel .li-vis",   function(e) { statsPanel.nodeStatsPanel.toggleStatVisibility(e) })
+
+/* 
+    Button Event Listeners 
+*/ 
+
 $("button#reset").click(reset)
-$("button#showNodeStats").click(showNodeStats)
-$("button#showGraphStats").click(showGraphStats)
+$("button#showNodeStats").click(statsPanel.nodeStatsPanel.toggleDisplay)
+$("button#showStatsPanel").click(e => statsPanel.toggleDisplay()); 
 $("button#printJson").click(printJson)
 
-// set up modal to show controls 
-var controls_modal = new g_modal(null, 'Controls', 
+/*
+    Set up controls modal 
+*/ 
+
+var controls_modal = new g_modal(
+    null, // no id needed
+    'Controls', 
     `<p>Click to add a node</p>
     <p>Double click to remove a node</p>
     <p>Click and drag a node to move it</p>
     <p>Click and drag a node on top of a node to add an edge</p>
-    <p>Double click an edge to remove it</p>`)
+    <p>Double click an edge to remove it</p>`); 
 $('body').append(controls_modal.wrapper)
 $("button#showControls").click(_ => controls_modal.showModal()); 
 
-// set up graph stats code editor 
-var gStatAdd_modal = new g_modal('newGraphStat', 'New Graph Statistic', 
-    `See the <a href='/docs/index.html#File:graph.js' target="_blank">documentation</a> for the graph properties that can
-    be used directly in the code.`)
-
-gStatAdd_modal.appendToBody(`
-    <textarea id="editor" rows="15" style="height:5px;">function customStatName(graph){\n  return graph.nodes.length;\n}</textarea>
-    <button id="enter_newGraphStat">Add</button>
-    `); 
-
-$('body').append(gStatAdd_modal.wrapper)
-$("#addNewGraphStat").click(_ => gStatAdd_modal.showModal()); 
-
-// code mirror 
-var elm = $("#newGraphStat #editor")[0]; 
-var codeEditor = CodeMirror.fromTextArea(elm, {
-  mode:  "javascript", 
-  lineNumbers: true, 
-  autofocus: true, 
-  autoRefresh: true, 
-  // height: auto, 
-  gutters: ["CodeMirror-lint-markers"],
-  lint: true, 
-  viewportMargin: 5
-});
-
-$("#enter_newGraphStat").click(function() {
-    var fn = codeEditor.getValue(); 
-    var expression = fn.substring(fn.indexOf('{'), fn.length);
-    var func = new Function('{' + expression + '}')
-    var funcName = fn.match(/^function(.*)\(/)[1].trim()
-
-    graph.graphStats[funcName] = func;
-
-    // hide modal 
-    gStatAdd_modal.hideModal(); 
-})
-
-// on all events update statistics 
-$(document).on("nodeAdd nodeRemove edgeAdd edgeRemove graphChange", updateGraphStats);  
-
-/* all events: 
-- nodeAdd
-- nodeRemove
-- edgeAdd
-- edgeRemove 
+/* 
+    Functions 
 */ 
-
-// function onNodeDragEnter(evt) {
-//     event.stopPropagation();
-
-//     var node = getNodeFromChild(evt.target);
-//     if (node) 
-//         node.addClass('dragOver');
-
-//         console.log("on drag enter");   
-// }
-
-// function onNodeDragLeave(evt) {
-//     event.stopPropagation();
-
-//     var node = getNodeFromChild(evt.target);
-//     if (node) 
-//         node.removeClass('dragOver');  
-
-//     console.log("on drag leave!")
-// }
-
 function printJson() {
     console.log(JSON.stringify(graph.nodes))
 }
@@ -123,7 +98,7 @@ function onNodeDrop(evt) {
         createUndirectedEdge(sourceID, targetID)
     } else { // move node
         var sourceNode = getNodeElmFromID(sourceID);
-        var height = sourceNode.height();
+        var height = sourceNode.find("svg").height();
         var offset = $(graph.container).offset(); 
         sourceNode.css({
             "left" : evt.pageX - offset.left - (height / 2), 
@@ -135,51 +110,10 @@ function onNodeDrop(evt) {
     }
 }
 
-function showNodeStats() {
-    if (!graph.settings.showNodeStats) {
-        $(this).text("Hide Node Stats")
-
-        // remove all old degree values
-        // todo - remove once degree is dynamic
-        $(".nodeinfo").remove()
-
-        // show degree for each node
-        $.each($(".node"), function(n, obj) {
-            var id = $(obj).attr('id')
-            var node = graph.getNode(id); 
-            var statStr = graph.getNodeStatsRepresentation(node, true); 
-            $(obj).append(statStr)
-        })
-    } else {
-        // remove all node info classes
-        $(".nodeinfo").remove()
-        $(this).text("Show Node Stats")
-    }
-
-    graph.settings.showNodeStats = !graph.settings.showNodeStats
-}
-
-function showGraphStats() {
-    var graphStatsPanel = $("#graphStatsPanel"); 
-    var graphDrawingPanel = $("#graphContainer"); 
-    var displacement = 150; 
-
-    if (!graph.settings.showGraphStats) {
-        //var statsStr = graph.getGraphStatsRepresentation(true); 
-        graphStatsPanel.show(); 
-
-        $(this).text("Hide Graph Stats")
-    } else {
-        graphStatsPanel.hide(); 
-        $(this).text("Show Graph Stats")
-    }
-
-    graph.settings.showGraphStats = !graph.settings.showGraphStats
-}
-
 function reset() {
     graph.reset()
     $(graph.container).fadeOut('fast', function() { $(graph.container).empty().show() })
+    statsPanel.graphStatsPanel.initStatsAndUpdateUI()
 
     var event = new CustomEvent('graphChange', { bubbles: true });
     document.dispatchEvent(event);
@@ -252,7 +186,7 @@ function removeNode(evt) {
     // update degree
     if (graph.settings.showNodeStats)
         for (neighbor of neighbors)
-            updateNodeStats(neighbor)
+            statsPanel.nodeStatsPanel.update(neighbor)
 
     // trigger event 
     var event = new CustomEvent('nodeRemove', { bubbles: true, id : id });
@@ -290,38 +224,6 @@ function onEdgeClick(evt) {
     }
 }
 
-function updateNodeStats(nodeID) {
-    var node = graph.getNode(nodeID);
-    if (graph.settings.showNodeStats) {
-        var stats = graph.nodeStats; 
-
-        Object.entries(stats).forEach(([key, fn]) => {
-            var value = fn(node).toFixed(2).replace(/[.,]00$/, "");
-           $(`.node#${nodeID} .nodeinfo .${key} num`).text(value); 
-        });
-    }           
-}
-
-function updateGraphStats() {
-    var statsStr = ""; 
-    var graphPanel = $("#graphStatsPanel #stats"); 
-
-    if (graph.settings.showGraphStats) {
-        var stats = graph.graphStats; 
-
-        Object.entries(stats).forEach(([key, fn]) => {
-            var value = fn(graph); 
-            
-            if (!isNaN(value)) // round numerical values to 2 decimals places 
-                value = value.toFixed(2).replace(/[.,]00$/, "");
-
-           statsStr += `${key}: ${value}\n`; 
-        });
-    }       
-
-    graphPanel.text(statsStr);   
-}
-
 function createUndirectedEdge(nodeID1, nodeID2) {
     if (nodeID1 == nodeID2)
         return;
@@ -334,9 +236,9 @@ function createUndirectedEdge(nodeID1, nodeID2) {
             nodes = [nodeID1, nodeID2]
 
             nodes.forEach(n => {
-                updateNodeStats(n); 
+                statsPanel.nodeStatsPanel.update(n); 
                 for (nb of graph.getNode(nodeID1).neighbors)
-                    updateNodeStats(nb); 
+                    statsPanel.nodeStatsPanel.update(nb); 
             })
         }
     } catch (e) {
@@ -367,9 +269,9 @@ function removeEdgeVisual(nodeID1, nodeID2) {
         nodes = [nodeID1, nodeID2]
 
         nodes.forEach(n => {
-            updateNodeStats(n); 
+            statsPanel.nodeStatsPanel.update(n); 
             for (nb of graph.getNode(nodeID1).neighbors)
-                updateNodeStats(nb); 
+                statsPanel.nodeStatsPanel.update(nb); 
         })
     }
 
@@ -381,14 +283,14 @@ function renderLine(nodeID1, nodeID2) {
 
     info1 = {
         position: node1.position(),
-        width: node1.width(), 
-        height: node1.find('svg').height()
+        width:    node1.find('svg').width(), 
+        height:   node1.find('svg').height()
     }
 
     info2 = {
         position: node2.position(),
-        width: node2.width(), 
-        height: node2.find('svg').height()
+        width:    node2.find('svg').width(), 
+        height:   node2.find('svg').height()
     }
 
     var x1 = info1.position.left + info1.width / 2; // node 1, X
@@ -399,45 +301,37 @@ function renderLine(nodeID1, nodeID2) {
     if (x2 == x1) { // straight vertical line 
         startX = x1; 
         startY = Math.min(y1, y2);  
-        minX = 0; 
-        minY = 0; 
-        maxX = 0; 
+        minX = 0, minY = 0, maxX = 0; 
         maxY = Math.max(y1, y2);
     } else if (y2 == y1) { // straight horizontal line 
         startX = Math.min(x1, x2); 
         startY = y1;  
-        minX = 0; 
-        minY = 0; 
+        minX = 0, minY = 0, maxY = 0;  
         maxX = Math.max(x1, x2); 
-        maxY = 0;
     } else if (x2 > x1 && y2 > y1) { // Diagonal, top-left to bottom-right
         startX = x1;
         startY = y1;
-        minX = 0;
-        minY = 0;
+        minX = 0, minY = 0;
         maxX = x2 - x1;
         maxY = y2 - y1;
     } else if (x2 < x1 && y2 < y1) {
         startX = x2;
         startY = y2;
-        minX = 0;
-        minY = 0;
+        minX = 0, minY = 0;
         maxX = x1 - x2;
         maxY = y1 - y2;
     } else if (x2 < x1 && y2 > y1) {
         startX = x2;
         startY = y1;
-        minX = 0;
+        minX = 0, maxY = 0; 
         minY = y2 - y1;
         maxX = x1 - x2;
-        maxY = 0;
     } else { 
         startX = x1;
         startY = y2;
-        minX = 0;
+        minX = 0, maxY = 0;
         minY = y1 - y2;
         maxX = x2 - x1;
-        maxY = 0;
     }
 
     drawLine(nodeID1,

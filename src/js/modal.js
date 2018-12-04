@@ -1,4 +1,4 @@
-// represents the modal UI 
+// represents a modal UI 
 
 class g_modal {
 	constructor(id, title, text) {
@@ -6,8 +6,7 @@ class g_modal {
 		this.title = title; 
 		this.text = text; 
 		this.footer = ''; 
-		this.wrapper = this.createModal(id, title, text, this.footer)[0]; 
-		// $('body').append(this.wrapper)
+		this.wrapper = this.createModal(id, title, text, this.footer)[0]; // html of modal 
 	}
 
 	showModal() {
@@ -50,6 +49,13 @@ class g_modal {
 		};
 
 		return elm; 
+	}
+
+	editTitle(newTitle) {
+		if (!newTitle)
+			newTitle = ""; 
+		this.title = newTitle; 
+		$(this.wrapper).find("h2").text(newTitle); 
 	}
 
 	appendToBody(html) {

@@ -2,10 +2,14 @@
         <title>Graph Builder</title>
         <link rel="shortcut icon" href="src/img/ico/icon.ico">
 
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" type="text/css" href="src/css/font-awesome.css"> 
+
         <!-- CSS files -->
-        <link rel="stylesheet/less" type="text/css" href="src/css/index.css">
-        <link rel="stylesheet/less" type="text/css" href="src/css/node.css">
-        <link rel="stylesheet/less" type="text/css" href="src/css/modal.css">
+        <link rel="stylesheet" type="text/css" href="src/css/index.css">
+        <link rel="stylesheet" type="text/css" href="src/css/node.css">
+        <link rel="stylesheet" type="text/css" href="src/css/modal.css">
+        <link rel="stylesheet" type="text/css" href="src/css/stats_panel.css">
 
         <!-- Google Font - Open Sans, Roboto -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto" rel="stylesheet">
@@ -20,19 +24,31 @@
     <div id="panels">
         <div id="toolsPanel">
             <button id="showControls" title="What can you do with this graph?">Controls</button>
-            <button id="showNodeStats" title="Shows statistics of each node">Show Node Stats</button>
-            <button id="showGraphStats" title="Shows statistics for the whole graph">Hide Graph Stats</button>
+            <button id="showNodeStats" title="Shows statistics of each node">Hide Node Stats</button>
+            <button id="showStatsPanel" title="Show stats panel bar">Hide Stats Panel</button>
             <button id="documentation"><a href="/docs/index.html#File:graph.js" target="_blank">Documentation <i class="icon-small fas fa-external-link-alt"></i></a></button>
             <button id="printJson" title="Prints the graph JSON in the console">Print JSON</button>
             <button id="reset" title="Clears all nodes and edges from the graph">Reset</button>
         </div>
 
-        <div id="graphStatsPanel">
-            <h3 class="center">Graph Stats 
-                <span id="addNewGraphStat"><i class="fas fa-plus-circle icon-md"></i></span>
-            </h3>
-            <div>
-                <p id="stats"></p>
+        <div id="statsPanel">
+            <div id="graphStatsPanel">
+                <h3 class="center">Graph Stats 
+                    <span id="addNewGraphStat"><i class="fas fa-plus-circle icon-md"></i></span>
+                </h3>
+                <div>
+                    <p id="stats"></p>
+                    <ul></ul> 
+                </div>
+            </div>
+            <div id="nodeStatsPanel">
+                <h3 class="center">Node Stats 
+                    <span id="addNewNodeStat"><i class="fas fa-plus-circle icon-md"></i></span>
+                </h3>
+                <div>
+                    <p id="stats"></p>
+                    <ul></ul> 
+                </div>
             </div>
         </div>
 
@@ -45,19 +61,19 @@
 
     <!-- libraries -->
     <script src="src/js/lib/jquery.min.js"></script>
-    <script src="src/js/lib/fontawesome-all.js"></script>
     
     <!-- Javascript files -->
-    <script src="src/js/graph.js"></script>
     <script src="src/js/utils.js"></script>
+    <script src="src/js/graph.js"></script>
     <script src="src/js/node.js"></script>
     <script src="src/js/modal.js"></script>
+    <script src="src/js/stats_panel.js"></script>
     <script src="src/js/ui.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
 
     <!-- LESS preprocessor -->
-    <script src="src/build/less.js" ></script>
+    <!--script src="src/build/less.js" ></script-->
 
     <script>
         // define graph
@@ -72,16 +88,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/display/autorefresh.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/lint.css" />
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.9.5/jshint.min.js"></script>
+    <script src="https://rawgithub.com/zaach/jsonlint/79b553fb65c192add9066da64043458981b3972b/lib/jsonlint.js"></script>
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/jshint/2.9.5/jshint.min.js"></script>
-<script src="//rawgithub.com/zaach/jsonlint/79b553fb65c192add9066da64043458981b3972b/lib/jsonlint.js"></script>
-<script src="//csslint.net/js/csslint.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/lint.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/javascript-lint.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/json-lint.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/css-lint.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/lint.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/javascript-lint.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/json-lint.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.35.0/addon/lint/css-lint.js"></script>
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111745002-1"></script>

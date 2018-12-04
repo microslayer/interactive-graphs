@@ -12,22 +12,58 @@ class node {
             
         return sum / this.degree()
      }
+     this.getStatValues = function(stats) {
+        var n = this; 
+        var statsObj = {}; 
+
+        Object.entries(stats).forEach(([key, stat]) => {
+            var value = null; 
+            var visible = stat.visible; 
+            if (visible) {
+                try {
+                    value = stat.fn(n); 
+                } catch (e) {
+                    value = 'Error: ' + JSON.stringify(e); 
+                }; 
+                if (!isNaN(value))
+                    value = value.toFixed(2).replace(/[.,]00$/, "");
+                statsObj[key] = { value, visible }; 
+            }
+        });
+
+        return statsObj; 
+     }, 
+     this.getStatValuesHtml = function(stats, wrapper) {
+        var statObj = this.getStatValues(stats); 
+        var statStr = "";
+
+        Object.entries(statObj).forEach(([key, stat]) => {
+                statStr += `<span class='${key}'>${key}: <num>${stat.value}</num></span><br />`; 
+        });
+
+        if (wrapper) 
+            statStr = `<p class="nodeinfo">` + statStr + `</p>`;
+
+        return statStr; 
+     }, 
      this.draw = function(data) {
          // create node container object
-         var node = $('<div draggable="true"></div>')
+         var n = $('<div draggable="true"></div>')
             .addClass('node')
             .attr('id', this.id)
             .css('top', data.x)
             .css('left', data.y);
 
          // append node SVG
-         node.append($.parseHTML(newNodeSVG(this.id, this.id)))
+         n.append($.parseHTML(newNodeSVG(this.id, this.id)))
 
-         if (graph.settings.showNodeStats)
-            node.append(graph.getNodeStatsRepresentation(this, true))
+         if (graph.settings.showNodeStats) {
+            var statStr = this.getStatValuesHtml(graph.nodeStats, true); 
+            n.append(statStr); 
+         }
 
          // append to graph container
-         $(node).hide().fadeIn('fast').appendTo(graph.container)
+         $(n).hide().fadeIn('fast').appendTo(graph.container)
             .css('top', data.x)
             .css('left', data.y);
      }

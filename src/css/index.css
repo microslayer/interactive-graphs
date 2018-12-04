@@ -1,6 +1,6 @@
 /* COLORS */
-@light-pink: #FFAAAA;
-@dark-pink: #AA3939;
+/*@light-pink: #FFAAAA;*/
+/*@dark-pink: #AA3939;*/
 
 body {
     margin:0px;
@@ -18,8 +18,9 @@ body {
     padding: 15px 10px;
     width:100%;
     border-bottom:1px solid #AA3939;
+}
 
-    & h1 {
+    #headerPanel h1 {
         font-family: 'Roboto', sans-serif;
         font-size: 28px;
         text-align: left;
@@ -27,93 +28,70 @@ body {
         padding-left:20px;
         text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
     }
-}
 
 #panels {
     display:flex;
     x-justify-content: space-around;
     x-align-items: stretch;
+}
 
-    & #toolsPanel {
+    #panels #toolsPanel {
         flex: 0 0 150px; 
         border-right: 1px solid #AA3939;
         display:block;
         height:100%;
-    }
+    }    
 
-    & #graphPanel {
+    #panels #graphPanel {
         border: 2px solid black;
         width:100%;
         height:100%;
+    }
 
-        & #graphContainer {
+        #panels #graphContainer {
             position:relative;
             height: 100%;
             width:100%;
             z-index: 3;
-        }
-    }
-
-    & #graphStatsPanel {
-        flex: 0 0 150px;
-        border: 2px black solid;
-        & h3 {
-            margin: 8px;
-            color: @dark-pink;        
-        }
-        & p {
-            margin-right: 14px;
-            margin-left: 14px;
-            font-size: 12px;
-            line-height: 21px;
-        }
-    }
-}
+        }    
 
 #toolsPanel > button {
     width:100%;
     height:30px;
     outline: none; 
     display: block;
-    color: @dark-pink;
+    color: #AA3939; /* @dark-pink */ 
     border:none;
-    border-bottom:1px solid @dark-pink;
+    border-bottom:1px solid #AA3939; /* @dark-pink */ 
     cursor:pointer;
-    
-    &:hover {
+    }
+
+    #toolsPanel:hover {
         background-color: #F6F1E9; 
         -webkit-transition: background-color 200ms linear;
         -ms-transition: background-color 200ms linear;
         transition: background-color 200ms linear;
-        color:@dark-pink;
+        color:#AA3939; /* @dark-pink */ 
     }
-}
-
-#addNewGraphStat {
-    cursor: pointer; 
-
-    &:hover {
-        color: #000;
-    };
-}
 
 .icon-small {
     width: 10px !important;   
 }
 
 .icon-md {
-    width: 14px !important;   
+    font-size:14px;
+    /*width: 14px !important;   */
 }
 
 #toolsPanel > button a {
     width: 100%;
     text-decoration: none;
-    color: @dark-pink;
+    color: #AA3939; /* @dark-pink */ 
+}
 
-    &:hover {
+    #toolsPanel:hover {
         color: #000;
     };
-}
 
 .center {
     text-align: center; 
