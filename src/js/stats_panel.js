@@ -124,7 +124,7 @@ function graphPanel(graph) {
 
         // append the modal wrapper to the body element 
         $(this.bodyElement).append(modal.wrapper)
-        $(this.launchModalElement).click(_ => modal.showModal()); 
+        $(this.editStatModalId).click(_ => modal.showModal()); 
 
         var elm = $(`#${this.editStatModalId} #editor`)[0]; 
         var editor = CodeMirror.fromTextArea(elm, codeMirrorSettings);
@@ -282,7 +282,7 @@ function nodePanel(graph) {
 
         // append the modal wrapper to the body element 
         $(this.bodyElement).append(modal.wrapper)
-        $(this.launchModalElement).click(_ => modal.showModal()); 
+        $(this.editStatModalId).click(_ => modal.showModal()); 
 
         var elm = $(`#${this.editStatModalId} #editor`)[0]; 
         var editor = CodeMirror.fromTextArea(elm, codeMirrorSettings);
