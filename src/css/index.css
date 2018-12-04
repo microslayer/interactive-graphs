@@ -79,7 +79,8 @@ body {
 }
 
 .icon-md {
-    width: 14px !important;   
+    font-size:14px;
+    /*width: 14px !important;   */
 }
 
 #toolsPanel > button a {

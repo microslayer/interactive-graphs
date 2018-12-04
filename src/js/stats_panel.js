@@ -47,16 +47,23 @@ function graphPanel(graph) {
     this.graph              = graph, 
     this.wrapperId          = '#graphStatsPanel', 
     this.bodyElement        = 'body',
+    this.modal              = null, 
+    this.codeEditor         = {}, 
     this.launchModalElement = "#addNewGraphStat", 
     this.codeMirrorSettings = codeMirrorSettings,
     this.submitModalButton  = "enter_newGraphStat",
-    this.modal              = null, 
-    this.codeEditor         = {}, 
-    this.modalId = 'newGraphStat',
+    this.newStatModalId     = 'newGraphStatModal',
+
+    this.editStatModal          = null, 
+    this.editStatModalId        = 'editGraphStatModal', 
+    this.editCodeEditor         = {}, 
+    this.editSubmitModalButton  = "enter_editGraphStat",
+    this.statBeingEdited    = null, 
 
     this.init = function() {
         this.initStatsAndUpdateUI(); 
         this.initCodeEditorModal(); 
+        this.initEditStatModal()
     }, 
 
     this.initStatsAndUpdateUI = function() {
@@ -66,8 +73,8 @@ function graphPanel(graph) {
     	// show graph statistics and add them as <li> tags to the list  
     	if (this.graph.settings.showGraphStats) {
     	    stats = this.graph.graphStats;  
-    	    Object.entries(stats).forEach(([key, value]) => {
-    	        statStr += `<li>${key}: \n</li>`; 
+    	    Object.entries(stats).forEach(([key, stat]) => {
+    	        statStr += getListItemHtml(key, null, { colon : true, visible : stat.visible }); 
     	    });
     	}
 
@@ -77,7 +84,7 @@ function graphPanel(graph) {
     this.initCodeEditorModal = function() {
     	// create a new modal
     	var modal = new g_modal(
-    		`${this.modalId}`, 
+    		`${this.newStatModalId}`, 
     		'New Graph Statistic', 
         	`See the <a href='/docs/index.html#File:graph.js' target="_blank">documentation</a> for the graph properties that can be used directly in the code.`
         ); 
@@ -92,13 +99,40 @@ function graphPanel(graph) {
     	$(this.bodyElement).append(modal.wrapper)
     	$(this.launchModalElement).click(_ => modal.showModal()); 
 
-    	var elm = $(`#${this.modalId} #editor`)[0]; 
+    	var elm = $(`#${this.newStatModalId} #editor`)[0]; 
     	var editor = CodeMirror.fromTextArea(elm, codeMirrorSettings);
         this.codeEditor = editor; 
 
     	$(`#${this.submitModalButton}`).click(this.addNewGraphStat); 
 
         this.modal = modal; 
+    }, 
+
+    this.initEditStatModal = function() {
+        // create a new modal
+        var modal = new g_modal(
+            `${this.editStatModalId}`, 
+            'Edit Graph Statistic', 
+            `See the <a href='/docs/index.html#File:graph.js' target="_blank">documentation</a> for the graph properties that can be used directly in the code.`
+        ); 
+
+        // create the modal body  
+        modal.appendToBody(`
+            <textarea id="editor" rows="15" style="height:5px;"></textarea>
+            <button id="${this.editSubmitModalButton}">Save</button>
+        `); 
+
+        // append the modal wrapper to the body element 
+        $(this.bodyElement).append(modal.wrapper)
+        $(this.launchModalElement).click(_ => modal.showModal()); 
+
+        var elm = $(`#${this.editStatModalId} #editor`)[0]; 
+        var editor = CodeMirror.fromTextArea(elm, codeMirrorSettings);
+        this.editCodeEditor = editor; 
+
+        $(`#${this.editSubmitModalButton}`).click(this.saveStat); 
+
+        this.editStatModal = modal; 
     }, 
 
     /* 
@@ -112,9 +146,39 @@ function graphPanel(graph) {
     	var func = new Function('{' + expression + '}')
     	var funcName = fn.match(/^function(.*)\(/)[1].trim()
 
-    	graph.graphStats[funcName] = func;
+    	graph.graphStats[funcName] = { visible: true, fn: func };
 
     	gp.modal.hideModal(); // hide modal 
+
+        gp.update() // update the UI 
+    }, 
+
+    /* 
+        This function allows a user to edit a single stat on the graph stat panel. 
+    */ 
+    this.editStat = function(e) {
+        var key = $(e.target).parents("li").children("key").text(); 
+        var stat = this.graph.graphStats[key]; 
+        var fn = new String(stat.fn); 
+
+        this.editCodeEditor.setValue(fn);
+        this.editStatModal.editTitle(`Edit "${key}"`); 
+        this.statBeingEdited = key; 
+        this.editStatModal.showModal(); 
+    }, 
+
+    /* 
+        This function allows a user to edit a single stat on the graph stat panel. 
+    */ 
+    this.saveStat = function(e, f) {
+        var fn = gp.editCodeEditor.getValue(); 
+        var expression = fn.substring(fn.indexOf('{'), fn.length);
+        var func = new Function('{' + expression + '}')
+        var funcName = fn.match(/^function(.*)\(/)[1].trim()
+
+        graph.graphStats[gp.statBeingEdited] = { visible: true, fn: func };
+
+        gp.editStatModal.hideModal(); // hide modal 
 
         gp.update() // update the UI 
     }, 
@@ -131,6 +195,25 @@ function graphPanel(graph) {
     	        statStr = graph.getStatValuesHtml(); 
 
     	    graphStatsList.html(statStr);   
+    }, 
+
+    /* 
+        This function deletes a single stat from the graph stat panel. 
+    */ 
+    this.deleteStat = function(e) {
+        var key = $(e.target).parents("li").children("key").text(); 
+        delete graph.graphStats[key]; 
+        this.update()
+    }, 
+
+    /* 
+        This function allows toggles the visibiltiy of stat on the graph stat panel. 
+    */ 
+    this.toggleStatVisibility = function(e) {
+        var key = $(e.target).parents("li").children("key").text(); 
+        var visible = graph.graphStats[key].visible; 
+        graph.graphStats[key].visible = !visible; 
+        this.update()
     }
 }
 
@@ -146,8 +229,16 @@ function nodePanel(graph) {
     this.codeEditor         = {}, 
     this.modalId            = 'newNodeStat',
 
+    this.editStatModal          = null, 
+    this.editStatModalId        = 'editNodeStatModal', 
+    this.editCodeEditor         = {}, 
+    this.editSubmitModalButton  = "enter_editNodeStat",
+    this.statBeingEdited    = null, 
+
     this.init = function() {
+        this.updatePanel()
         this.initCodeEditorModal(); 
+        this.initEditStatModal(); 
     }
 
     this.initCodeEditorModal = function() {
@@ -174,6 +265,34 @@ function nodePanel(graph) {
 
         this.modal = modal; 
     }, 
+
+    this.initEditStatModal = function() {
+        // create a new modal
+        var modal = new g_modal(
+            `${this.editStatModalId}`, 
+            'Edit Node Statistic', 
+            `See the <a href='/docs/index.html#File:node.js' target="_blank">documentation</a> for the node properties that can be used directly in the code.`
+        ); 
+
+        // create the modal body  
+        modal.appendToBody(`
+            <textarea id="editor" rows="15" style="height:5px;"></textarea>
+            <button id="${this.editSubmitModalButton}">Save</button>
+        `); 
+
+        // append the modal wrapper to the body element 
+        $(this.bodyElement).append(modal.wrapper)
+        $(this.launchModalElement).click(_ => modal.showModal()); 
+
+        var elm = $(`#${this.editStatModalId} #editor`)[0]; 
+        var editor = CodeMirror.fromTextArea(elm, codeMirrorSettings);
+        this.editCodeEditor = editor; 
+
+        $(`#${this.editSubmitModalButton}`).click(this.saveStat); 
+
+        this.editStatModal = modal; 
+    }, 
+
 
     this.toggleDisplay = function() {
         // "this" is redefined as the panel button here, use "np" to refer
@@ -208,6 +327,39 @@ function nodePanel(graph) {
     }, 
 
     /* 
+        This function adds a new node stat and re-renders all node  
+        infos to include that stat. It takes the function from the  
+        value in this.codeEditor, which is the code editor on the 
+        new node stat modal. 
+    */ 
+    this.addNewNodeStat = function() {
+        // "this" is hidden here, use "np" 
+        var fn = np.codeEditor.getValue(); 
+        var expression = 'return ' + fn; 
+        var func = new Function(expression)
+        var funcName = fn.match(/^function(.*)\(/)[1].trim()
+
+        np.graph.nodeStats[funcName] = { fn: func(), visible: true };
+        np.updateAllNodes()
+        np.modal.hideModal();
+
+        var event = new CustomEvent('nodeStatAdd');
+        document.dispatchEvent(event);
+    }, 
+
+    /* 
+        This function updates the node stats of all nodes and updates 
+        the panel. 
+    */ 
+    this.updateAllNodes = function() {
+        if (this.graph.settings.showNodeStats)
+            for (n of this.graph.nodes) {
+                this.update(n)
+        }
+        this.updatePanel()
+    }
+
+    /* 
         This function updates the individual stat values of a given node.  
         @node - can be a nodeID or an actual node. 
         @force - boolean that, when true, forces the value of the node to be shown even if `showNodeStats` is false. 
@@ -225,33 +377,6 @@ function nodePanel(graph) {
     }, 
 
     /* 
-        This function adds a new node stat and re-renders all node  
-        infos to include that stat. It takes the function from the  
-        value in this.codeEditor, which is the code editor on the 
-        new node stat modal. 
-    */ 
-    this.addNewNodeStat = function() {
-        // "this" is hidden here, use "np" 
-        var fn = np.codeEditor.getValue(); 
-        var expression = 'return ' + fn; 
-        var func = new Function(expression)
-        var funcName = fn.match(/^function(.*)\(/)[1].trim()
-
-        np.graph.nodeStats[funcName] = func();
-
-        // update all nodes
-        if (graph.settings.showNodeStats)
-            for (n of graph.nodes) {
-                np.update(n)
-        }
-
-        np.modal.hideModal(); // hide modal 
-
-        var event = new CustomEvent('nodeStatAdd');
-        document.dispatchEvent(event);
-    }, 
-
-    /* 
         This function updates the Node Stats Panel with the name of the node stat functions
         when a node stat is added, deleted, or changed. 
     */ 
@@ -259,13 +384,58 @@ function nodePanel(graph) {
         var statsStr = ""; 
         var graphStatsList = $("#statsPanel #nodeStatsPanel ul"); 
 
-        if (np.graph.settings.showNodeStats) {
-            var stats = np.graph.nodeStats; 
-            Object.entries(stats).forEach(([key, fn]) => {
-                statsStr += `<li>${key}</li>`; 
-            });
-        } 
+        var stats = np.graph.nodeStats; 
+        Object.entries(stats).forEach(([key, stat]) => {
+            statsStr += getListItemHtml(key, null, { visible: stat.visible}); 
+        });
 
         graphStatsList.html(statsStr); 
+    }, 
+
+    /* 
+        This function allows a user to edit a single stat on the graph stat panel. 
+    */ 
+    this.editStat = function(e) {
+        var key = $(e.target).parents("li").children("key").text(); 
+        var stat = this.graph.nodeStats[key]; 
+        var fn = new String(stat.fn); 
+
+        this.editCodeEditor.setValue(fn);
+        this.editStatModal.editTitle(`Edit "${key}"`); 
+        this.statBeingEdited = key; 
+        this.editStatModal.showModal(); 
+    }, 
+
+    /* 
+        This function allows a user to edit a single stat on the graph stat panel. 
+    */ 
+    this.saveStat = function(e, f) {
+        var fn = np.editCodeEditor.getValue(); 
+        var expression = 'return ' + fn; 
+        var func = new Function(expression)
+        var funcName = fn.match(/^function(.*)\(/)[1].trim()
+
+        graph.nodeStats[np.statBeingEdited] = { visible: true, fn: func() };
+        np.editStatModal.hideModal();
+        np.updateAllNodes() 
+    }, 
+
+    /* 
+        This function deletes a single stat from the node stat panel. 
+    */ 
+    this.deleteStat = function(e) {
+        var key = $(e.target).parents("li").children("key").text(); 
+        delete graph.nodeStats[key]; 
+        this.updateAllNodes()
+    }, 
+
+    /* 
+        This function allows toggles the visibiltiy of stat on the node stat panel. 
+    */ 
+    this.toggleStatVisibility = function(e) {
+        var key = $(e.target).parents("li").children("key").text(); 
+        var visible = graph.nodeStats[key].visible; 
+        graph.nodeStats[key].visible = !visible; 
+        this.updateAllNodes()
     }
 }

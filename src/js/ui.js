@@ -41,6 +41,17 @@ $(document).on("nodeStatAdd nodeStatChange nodeStatRemove", e => statsPanel.node
 $(document).on("nodeStatAdd nodeStatChange nodeStatRemove", e => statsPanel.nodeStatsPanel.update)
 
 /* 
+    Graph & node stat panel button event listeners 
+*/ 
+
+$(document).on('click', "#graphStatsPanel .li-del",  function(e) { statsPanel.graphStatsPanel.deleteStat(e) })
+$(document).on('click', "#graphStatsPanel .li-edit", function(e) { statsPanel.graphStatsPanel.editStat(e) })
+$(document).on('click', "#graphStatsPanel .li-vis",  function(e) { statsPanel.graphStatsPanel.toggleStatVisibility(e) })
+$(document).on('click', "#nodeStatsPanel .li-del",   function(e) { statsPanel.nodeStatsPanel.deleteStat(e) })
+$(document).on('click', "#nodeStatsPanel .li-edit",  function(e) { statsPanel.nodeStatsPanel.editStat(e) })
+$(document).on('click', "#nodeStatsPanel .li-vis",   function(e) { statsPanel.nodeStatsPanel.toggleStatVisibility(e) })
+
+/* 
     Button Event Listeners 
 */ 
 

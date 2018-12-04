@@ -16,11 +16,19 @@ class node {
         var n = this; 
         var statsObj = {}; 
 
-        Object.entries(stats).forEach(([key, fn]) => {
-            var value = fn(n); 
-            if (!isNaN(value))
-                value = value.toFixed(2).replace(/[.,]00$/, "");
-            statsObj[key] = value; 
+        Object.entries(stats).forEach(([key, stat]) => {
+            var value = null; 
+            var visible = stat.visible; 
+            if (visible) {
+                try {
+                    value = stat.fn(n); 
+                } catch (e) {
+                    value = 'Error: ' + JSON.stringify(e); 
+                }; 
+                if (!isNaN(value))
+                    value = value.toFixed(2).replace(/[.,]00$/, "");
+                statsObj[key] = { value, visible }; 
+            }
         });
 
         return statsObj; 
@@ -29,8 +37,8 @@ class node {
         var statObj = this.getStatValues(stats); 
         var statStr = "";
 
-        Object.entries(statObj).forEach(([key, value]) => {
-            statStr += `<span class='${key}'>${key}: <num>${value}</num></span><br />`; 
+        Object.entries(statObj).forEach(([key, stat]) => {
+                statStr += `<span class='${key}'>${key}: <num>${stat.value}</num></span><br />`; 
         });
 
         if (wrapper) 

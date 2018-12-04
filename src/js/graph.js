@@ -3,41 +3,53 @@ class Graph {
      this.nodes = []
      this.container = container
      this.settings = {
-        showNodeStats : false, 
+        showNodeStats : true, 
         showGraphStats : true
      }
      this.nodeStats = {
-        'degree' : function(node) { 
+        'degree' : {
+            fn: function(node) { 
              return node.degree()
+            }, 
+            visible: true
         }, 
-        'fiVector' : function(node) { 
-            var degree = node.degree()
-
-            if (degree == 0) return 0; 
-
-            var neighbors_degree = []
-            node.neighbors.forEach(neighbor => { 
-                neighbors_degree.push(graph.getNode(neighbor).degree()) 
-            }); 
-
-            return (neighbors_degree.reduce((a, b) => a + b, 0) / neighbors_degree.length) / degree; 
+        'fiVector' : {
+            visible: true, 
+            fn: function(node) { 
+                var degree = node.degree()
+                if (degree == 0) return 0; 
+                var neighbors_degree = []
+                node.neighbors.forEach(neighbor => { 
+                    neighbors_degree.push(graph.getNode(neighbor).degree()) 
+                }); 
+                return (neighbors_degree.reduce((a, b) => a + b, 0) / neighbors_degree.length) / degree; 
+            }, 
         }, 
-        // for testing only! do not commit 
-        'neighborLen' : function(node) { 
-            return node.neighbors.length; 
+        'neighborLen' : {
+            visible: true, 
+            fn: function(node) { 
+                return node.neighbors.length;
+            }, 
         }
      }, 
      this.graphStats = {
-        'degree' : function(graph) { 
+        'degree' : { 
+            visible: true, 
+            fn: function(graph) { 
              return graph.nodes.length; 
+            }
         }, 
-        // do not commit!! just for testing 
-        'degreeDiv3' : function(graph) { 
+        'degreeDiv3' : { 
+            visible: true, 
+            fn: function(graph) { 
              return graph.nodes.length / 3; 
+            }
         }, 
-        //do not commit!! just for testing 
-        'firstNeighbor' : function(graph) { 
+        'firstNeighbor' : { 
+            visible: true, 
+            fn: function(graph) { 
              return graph.nodes[0].id; 
+            }
         }
      }, 
      this.utils = {
@@ -125,11 +137,20 @@ class Graph {
         var stats = this.graphStats; 
         var statsObj = {}; 
 
-        Object.entries(stats).forEach(([key, fn]) => {
-            var value = fn(n); 
-            if (!isNaN(value))
-                value = value.toFixed(2).replace(/[.,]00$/, "");
-            statsObj[key] = value; 
+        Object.entries(stats).forEach(([key, stat]) => {
+            var entry = { value: null, visible: stat.visible };   
+            if (!stat.visible) // don't compute stat if it's not visible 
+                entry.value = ""; 
+            else {
+                try {
+                    entry.value = stat.fn(n)
+                } catch (e) {
+                    entry.value = "Error: " + (e ? JSON.stringify(e) : "");  
+                }
+                if (!isNaN(entry.value))
+                    entry.value = entry.value.toFixed(2).replace(/[.,]00$/, "");
+            }
+            statsObj[key] = entry; 
         });
 
         return statsObj; 
@@ -139,8 +160,8 @@ class Graph {
         var statObj = this.getStatValues(stats); 
         var statStr = "";
 
-        Object.entries(statObj).forEach(([key, value]) => {
-            statStr += `<li>${key}: ${value}\n</li>`; 
+        Object.entries(statObj).forEach(([key, val]) => {
+            statStr += getListItemHtml(key, val.value, {colon:true, visible: val.visible }); 
         });
 
         if (wrapper) 

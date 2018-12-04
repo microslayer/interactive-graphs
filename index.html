@@ -2,6 +2,9 @@
         <title>Graph Builder</title>
         <link rel="shortcut icon" href="src/img/ico/icon.ico">
 
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" type="text/css" href="src/css/font-awesome.css"> 
+
         <!-- CSS files -->
         <link rel="stylesheet" type="text/css" href="src/css/index.css">
         <link rel="stylesheet" type="text/css" href="src/css/node.css">
@@ -21,7 +24,7 @@
     <div id="panels">
         <div id="toolsPanel">
             <button id="showControls" title="What can you do with this graph?">Controls</button>
-            <button id="showNodeStats" title="Shows statistics of each node">Show Node Stats</button>
+            <button id="showNodeStats" title="Shows statistics of each node">Hide Node Stats</button>
             <button id="showStatsPanel" title="Show stats panel bar">Hide Stats Panel</button>
             <button id="documentation"><a href="/docs/index.html#File:graph.js" target="_blank">Documentation <i class="icon-small fas fa-external-link-alt"></i></a></button>
             <button id="printJson" title="Prints the graph JSON in the console">Print JSON</button>
@@ -58,11 +61,10 @@
 
     <!-- libraries -->
     <script src="src/js/lib/jquery.min.js"></script>
-    <script src="src/js/lib/fontawesome-all.js"></script>
     
     <!-- Javascript files -->
-    <script src="src/js/graph.js"></script>
     <script src="src/js/utils.js"></script>
+    <script src="src/js/graph.js"></script>
     <script src="src/js/node.js"></script>
     <script src="src/js/modal.js"></script>
     <script src="src/js/stats_panel.js"></script>

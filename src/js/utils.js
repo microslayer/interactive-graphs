@@ -37,3 +37,21 @@ function remove(array, element) {
         array.splice(index, 1);
     }
 }
+
+// delivers the HTML for <li> list items in the graph & node stat panels. 
+function getListItemHtml(key, value, obj) {
+    if (!value) 
+        value = ""; 
+
+    var colon        = (obj && obj.colon) ? ': ' : ' ';  
+    var visibleClass = (obj && !obj.visible) ? ' light ' : ''; 
+
+    return `<li class="${visibleClass}">
+                <key>${key}</key> 
+                ${colon} 
+                ${value}
+                <i class="fa fa-trash li-del" title="Delete"></i>
+                <i class="fa fa-pen li-edit" title="Edit"></i>
+                <i class="far fa-eye li-vis" title="View"></i>
+            <li>`
+}
